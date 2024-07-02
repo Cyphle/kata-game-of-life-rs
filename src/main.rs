@@ -1,3 +1,6 @@
+mod cell;
+mod universe;
+
 fn main() {
     // TODO
     /*
