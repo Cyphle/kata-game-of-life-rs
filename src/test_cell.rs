@@ -16,8 +16,15 @@ impl<'a> TestCell<'a> {
         };
     }
 
-    pub fn add_neighbour(&mut self, neighbour: &'a Cell) {
+    pub fn add_neighbour(&mut self, neighbour: &'a TestCell) {
         self.neighbours.push(neighbour);
+    }
+
+    pub fn get_alives(&self) -> Vec<&TestCell> {
+        return self.neighbours
+            .iter()
+            .filter(|cell| cell.is_alive())
+            .collect();
     }
 
     pub fn new_alive() -> TestCell<'a> {
@@ -33,29 +40,14 @@ mod cell_tests {
     use crate::test_cell::TestCell;
 
     #[test]
-    fn should_not_be_able_to_add_two_neighbours_at_same_position<'a>() {
-        // let mut cell = Cell::new_alive();
-        // let mut neighbour_one = Cell::new_alive();
-        // let mut neighbour_two = Cell::new_alive();
-        //
-        // cell.add_neighbour(&neighbour_one, RelativePosition::EAST);
-        // cell.add_neighbour(&neighbour_one, RelativePosition::EAST);
-        //
-        // let east_neighbours = cell.neighbours.into_iter().filter(|(neighbour, position)| match position {
-        //     RelativePosition::NORTH |
-        //     RelativePosition::WEST |
-        //     RelativePosition::SOUTH => {false}
-        //     RelativePosition::EAST => {true}
-        // })
-        //     .collect::<(&Cell, RelativePosition)>();
+    fn should_not_be_able_to_add_two_neighbours_at_same_position() {
+        let cell = TestCell::new_alive();
+        cell.ad(&TestCell::new_alive());
+        cell.push(&TestCell::new_alive());
 
-        let mut test: Vec<&'a TestCell<'a>> = vec![];
-        test.push(&TestCell::new_alive());
-        test.push(&TestCell::new_alive());
+        let res = cell.get_alives();
 
-        let res: Vec<bool> = test.iter().map(|c| c.is_alive()).collect();
-
-
+        println!("{:?}", res);
         let toto = "";
     }
 
