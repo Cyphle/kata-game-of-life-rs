@@ -1,3 +1,5 @@
+use crate::cell::{Cell, CellState};
+
 mod cell;
 mod universe;
 
@@ -8,5 +10,8 @@ fn main() {
     - Cell with state (alive/dead)
     - Universe
      */
+
+    let x = Cell::new(CellState::ALIVE);
+
     println!("Hello, world!");
 }
