@@ -24,7 +24,7 @@ impl<'a> TestCell<'a> {
         return self.neighbours
             .iter()
             .filter(|cell| cell.is_alive())
-            .collect();
+            .collect::<Vec<&TestCell>>();
     }
 
     pub fn new_alive() -> TestCell<'a> {
