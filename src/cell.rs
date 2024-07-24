@@ -103,12 +103,34 @@ mod cell_tests {
 
     #[test]
     fn should_be_alive_when_have_one_neighbour_alive_at_next_tick() {
-        let mut central_cell = Cell::new_alive();
-        let north_cell = Cell::new_alive();
-        central_cell.add_neighbour(&north_cell, RelativePosition::NORTH);
+        let (mut central, north, east, south, west) = generate_cell_with_neighbours(
+            CellState::ALIVE,
+            CellState::ALIVE,
+            CellState::ALIVE,
+            CellState::ALIVE,
+        );
+        central.add_neighbour(&north, RelativePosition::NORTH);
+        central.add_neighbour(&east, RelativePosition::EAST);
+        central.add_neighbour(&south, RelativePosition::SOUTH);
+        central.add_neighbour(&east, RelativePosition::WEST);
 
-        central_cell.tick();
+        central.tick();
 
-        // assert_eq!(central_cell.is_alive(), true);
+        assert_eq!(central.is_alive(), true);
+    }
+
+    fn generate_cell_with_neighbours<'a>(
+        northState: CellState,
+        eastState: CellState,
+        southState: CellState,
+        westState: CellState,
+    ) -> (Cell<'a>, Cell<'a>, Cell<'a>, Cell<'a>, Cell<'a>) {
+        let north = Cell::new(northState);
+        let east = Cell::new(eastState);
+        let south = Cell::new(southState);
+        let west = Cell::new(westState);
+        let mut central = Cell::new_alive();
+
+        (central, north, east, south, west)
     }
 }
