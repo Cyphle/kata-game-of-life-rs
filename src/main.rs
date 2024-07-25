@@ -3,6 +3,7 @@ use crate::cell::{Cell, CellState};
 mod cell;
 mod universe;
 mod test_cell;
+mod cell_rc;
 
 fn main() {
     // TODO

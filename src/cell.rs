@@ -17,7 +17,7 @@ pub enum RelativePosition {
 #[derive(Debug)]
 pub struct Cell<'a> {
     state: CellState,
-    neighbours: Vec<(&'a Cell<'a>, RelativePosition)>,
+    neighbours: Vec<(&'a Cell<'a>, RelativePosition)>, // TODO faut peut être mieux passer à un Rc en fait. A essayer
 }
 
 impl<'a> Cell<'a> {
