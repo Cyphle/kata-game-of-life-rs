@@ -38,9 +38,11 @@ impl Cell {
         self.neighbours.len()
     }
 
-    pub fn tick(&self) {
+    pub fn tick(&mut self) {
         let res: Vec<bool> = self.neighbours.iter().map(|(cell, _)| cell.is_alive()).collect();
-        println!("Res in cell {:?}", res);
+        if res.iter().filter(|x| **x == true).count() < 2 {
+            self.state = CellState::DEAD;
+        }
     }
 
     pub fn new(state: CellState) -> Cell {
@@ -86,7 +88,7 @@ mod cell_tests {
 
     #[test]
     fn should_be_alive_at_next_tick_when_alive() {
-        let cell = Cell::new_alive();
+        let mut cell = Cell::new_alive();
 
         cell.tick();
 
@@ -126,10 +128,27 @@ mod cell_tests {
         central.add_neighbour(Rc::clone(&north), RelativePosition::NORTH);
         central.add_neighbour(Rc::clone(&east), RelativePosition::EAST);
         central.add_neighbour(Rc::clone(&south), RelativePosition::SOUTH);
-        central.add_neighbour(Rc::clone(&east), RelativePosition::WEST);
+        central.add_neighbour(Rc::clone(&west), RelativePosition::WEST);
 
         central.tick();
 
         assert_eq!(central.is_alive(), true);
+    }
+
+    #[test]
+    fn should_be_dead_when_have_one_neighbour_alive_at_next_tick() {
+        let north = Rc::new(Cell::new_alive());
+        let east = Rc::new(Cell::new_dead());
+        let south = Rc::new(Cell::new_dead());
+        let west = Rc::new(Cell::new_dead());
+        let mut central = Cell::new_alive();
+        central.add_neighbour(Rc::clone(&north), RelativePosition::NORTH);
+        central.add_neighbour(Rc::clone(&east), RelativePosition::EAST);
+        central.add_neighbour(Rc::clone(&south), RelativePosition::SOUTH);
+        central.add_neighbour(Rc::clone(&west), RelativePosition::WEST);
+
+        central.tick();
+
+        assert_eq!(central.is_alive(), false);
     }
 }

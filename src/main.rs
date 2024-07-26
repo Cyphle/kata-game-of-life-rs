@@ -11,7 +11,7 @@ fn main() {
     - Universe
      */
 
-    let x = Cell::new(CellState::ALIVE);
+    // let x = Cell::new(CellState::ALIVE);
 
     println!("Hello, world!");
 }
