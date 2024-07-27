@@ -160,6 +160,7 @@ mod cell_tests {
     }
 
     mod game_rules {
+        use std::cell::RefCell;
         use std::rc::Rc;
         use crate::cell::{Cell, RelativePosition};
 
@@ -174,19 +175,19 @@ mod cell_tests {
             let south_west = Rc::new(Cell::new_dead());
             let west = Rc::new(Cell::new_dead());
             let north_west = Rc::new(Cell::new_dead());
-            let mut central = Cell::new_alive();
-            central.add_neighbour(Rc::clone(&north), RelativePosition::NORTH);
-            central.add_neighbour(Rc::clone(&north_est), RelativePosition::NORTH_EAST);
-            central.add_neighbour(Rc::clone(&east), RelativePosition::EAST);
-            central.add_neighbour(Rc::clone(&south_east), RelativePosition::SOUTH_EST);
-            central.add_neighbour(Rc::clone(&south), RelativePosition::SOUTH);
-            central.add_neighbour(Rc::clone(&south_west), RelativePosition::SOUTH_WEST);
-            central.add_neighbour(Rc::clone(&west), RelativePosition::WEST);
-            central.add_neighbour(Rc::clone(&north_west), RelativePosition::NORTH_WEST);
+            let mut central = Rc::new(RefCell::new(Cell::new_alive()));
+            central.borrow_mut().add_neighbour(Rc::clone(&north), RelativePosition::NORTH);
+            central.borrow_mut().add_neighbour(Rc::clone(&north_est), RelativePosition::NORTH_EAST);
+            central.borrow_mut().add_neighbour(Rc::clone(&east), RelativePosition::EAST);
+            central.borrow_mut().add_neighbour(Rc::clone(&south_east), RelativePosition::SOUTH_EST);
+            central.borrow_mut().add_neighbour(Rc::clone(&south), RelativePosition::SOUTH);
+            central.borrow_mut().add_neighbour(Rc::clone(&south_west), RelativePosition::SOUTH_WEST);
+            central.borrow_mut().add_neighbour(Rc::clone(&west), RelativePosition::WEST);
+            central.borrow_mut().add_neighbour(Rc::clone(&north_west), RelativePosition::NORTH_WEST);
 
-            central.tick();
+            central.borrow_mut().tick();
 
-            assert_eq!(central.is_alive(), false);
+            assert_eq!(central.borrow().is_alive(), false);
         }
 
         // Any live cell with two or three live neighbours lives on to the next generation.
