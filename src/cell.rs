@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum CellState {
     ALIVE,
     DEAD,
@@ -15,7 +15,7 @@ pub enum RelativePosition {
     SOUTH,
     SOUTH_WEST,
     WEST,
-    NORTH_WEST
+    NORTH_WEST,
 }
 
 #[derive(Debug)]
@@ -26,10 +26,13 @@ pub struct Cell {
 
 impl Cell {
     pub fn is_alive(&self) -> bool {
-        return match self.state {
+        match self.state {
             CellState::ALIVE => { true }
             CellState::DEAD => { false }
-        };
+        }
+    }
+    pub fn is_dead(&self) -> bool {
+        !self.is_alive()
     }
 
     pub fn add_neighbour(&mut self, neighbour: Rc<Cell>, position: RelativePosition) {
@@ -45,11 +48,16 @@ impl Cell {
     pub fn tick(&mut self) {
         let number_of_live_neighbours = self.count_live_neighbours();
         match number_of_live_neighbours {
-            n if n < 2 => {
-                self.state = CellState::DEAD;
-            },
-            2 | 3 => {
-            },
+            n if n < 2 || n > 3 => {
+                if self.is_alive() {
+                    self.state = CellState::DEAD;
+                }
+            }
+            3 => {
+                if self.is_dead() {
+                    self.state = CellState::ALIVE
+                }
+            }
             _ => {}
         }
     }
@@ -126,10 +134,8 @@ mod cell_tests {
             .neighbours
             .into_iter()
             .filter(|(_, position)| match position {
-                RelativePosition::NORTH |
-                RelativePosition::WEST |
-                RelativePosition::SOUTH => { false }
                 RelativePosition::EAST => { true }
+                _ => { false }
             })
             .map(|(cell, _)| cell)
             .count();
@@ -157,61 +163,108 @@ mod cell_tests {
         use std::rc::Rc;
         use crate::cell::{Cell, RelativePosition};
 
-        // TODO a reprendre avec 8 voisins
         // Any live cell with fewer than two live neighbours dies, as if caused by under-population.
         #[test]
         fn should_be_dead_when_have_one_neighbour_alive_at_next_tick() {
             let north = Rc::new(Cell::new_alive());
+            let north_est = Rc::new(Cell::new_dead());
             let east = Rc::new(Cell::new_dead());
+            let south_east = Rc::new(Cell::new_dead());
             let south = Rc::new(Cell::new_dead());
+            let south_west = Rc::new(Cell::new_dead());
             let west = Rc::new(Cell::new_dead());
+            let north_west = Rc::new(Cell::new_dead());
             let mut central = Cell::new_alive();
             central.add_neighbour(Rc::clone(&north), RelativePosition::NORTH);
+            central.add_neighbour(Rc::clone(&north_est), RelativePosition::NORTH_EAST);
             central.add_neighbour(Rc::clone(&east), RelativePosition::EAST);
+            central.add_neighbour(Rc::clone(&south_east), RelativePosition::SOUTH_EST);
             central.add_neighbour(Rc::clone(&south), RelativePosition::SOUTH);
+            central.add_neighbour(Rc::clone(&south_west), RelativePosition::SOUTH_WEST);
             central.add_neighbour(Rc::clone(&west), RelativePosition::WEST);
+            central.add_neighbour(Rc::clone(&north_west), RelativePosition::NORTH_WEST);
 
             central.tick();
 
             assert_eq!(central.is_alive(), false);
         }
 
-        // TODO a reprendre avec 8 voisins
         // Any live cell with two or three live neighbours lives on to the next generation.
         #[test]
         fn should_be_alive_when_have_two_or_three_neighbours_alive_at_next_tick() {
             let north = Rc::new(Cell::new_alive());
+            let north_est = Rc::new(Cell::new_alive());
             let east = Rc::new(Cell::new_alive());
+            let south_east = Rc::new(Cell::new_dead());
             let south = Rc::new(Cell::new_dead());
+            let south_west = Rc::new(Cell::new_dead());
             let west = Rc::new(Cell::new_dead());
+            let north_west = Rc::new(Cell::new_dead());
             let mut central = Cell::new_alive();
             central.add_neighbour(Rc::clone(&north), RelativePosition::NORTH);
+            central.add_neighbour(Rc::clone(&north_est), RelativePosition::NORTH_EAST);
             central.add_neighbour(Rc::clone(&east), RelativePosition::EAST);
+            central.add_neighbour(Rc::clone(&south_east), RelativePosition::SOUTH_EST);
             central.add_neighbour(Rc::clone(&south), RelativePosition::SOUTH);
+            central.add_neighbour(Rc::clone(&south_west), RelativePosition::SOUTH_WEST);
             central.add_neighbour(Rc::clone(&west), RelativePosition::WEST);
+            central.add_neighbour(Rc::clone(&north_west), RelativePosition::NORTH_WEST);
 
             central.tick();
 
             assert_eq!(central.is_alive(), true);
         }
 
-        // TODO a faire et a reprendre avec 8 voisins
-        // // Any live cell with more than three live neighbours dies, as if by overcrowding.
-        // #[test]
-        // fn should_be_dead_when_more_then_three_neighbours_alive_at_next_tick() {
-        //     let north = Rc::new(Cell::new_alive());
-        //     let east = Rc::new(Cell::new_alive());
-        //     let south = Rc::new(Cell::new_dead());
-        //     let west = Rc::new(Cell::new_dead());
-        //     let mut central = Cell::new_alive();
-        //     central.add_neighbour(Rc::clone(&north), RelativePosition::NORTH);
-        //     central.add_neighbour(Rc::clone(&east), RelativePosition::EAST);
-        //     central.add_neighbour(Rc::clone(&south), RelativePosition::SOUTH);
-        //     central.add_neighbour(Rc::clone(&west), RelativePosition::WEST);
-        //
-        //     central.tick();
-        //
-        //     assert_eq!(central.is_alive(), true);
-        // }
+        // Any live cell with more than three live neighbours dies, as if by overcrowding.
+        #[test]
+        fn should_be_dead_when_more_then_three_neighbours_alive_at_next_tick() {
+            let north = Rc::new(Cell::new_alive());
+            let north_est = Rc::new(Cell::new_alive());
+            let east = Rc::new(Cell::new_alive());
+            let south_east = Rc::new(Cell::new_alive());
+            let south = Rc::new(Cell::new_dead());
+            let south_west = Rc::new(Cell::new_dead());
+            let west = Rc::new(Cell::new_dead());
+            let north_west = Rc::new(Cell::new_dead());
+            let mut central = Cell::new_alive();
+            central.add_neighbour(Rc::clone(&north), RelativePosition::NORTH);
+            central.add_neighbour(Rc::clone(&north_est), RelativePosition::NORTH_EAST);
+            central.add_neighbour(Rc::clone(&east), RelativePosition::EAST);
+            central.add_neighbour(Rc::clone(&south_east), RelativePosition::SOUTH_EST);
+            central.add_neighbour(Rc::clone(&south), RelativePosition::SOUTH);
+            central.add_neighbour(Rc::clone(&south_west), RelativePosition::SOUTH_WEST);
+            central.add_neighbour(Rc::clone(&west), RelativePosition::WEST);
+            central.add_neighbour(Rc::clone(&north_west), RelativePosition::NORTH_WEST);
+
+            central.tick();
+
+            assert_eq!(central.is_alive(), false);
+        }
+
+        // Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+        #[test]
+        fn should_be_alive_when_three_live_neighbours_alive_at_next_tick() {
+            let north = Rc::new(Cell::new_alive());
+            let north_est = Rc::new(Cell::new_alive());
+            let east = Rc::new(Cell::new_alive());
+            let south_east = Rc::new(Cell::new_dead());
+            let south = Rc::new(Cell::new_dead());
+            let south_west = Rc::new(Cell::new_dead());
+            let west = Rc::new(Cell::new_dead());
+            let north_west = Rc::new(Cell::new_dead());
+            let mut central = Cell::new_dead();
+            central.add_neighbour(Rc::clone(&north), RelativePosition::NORTH);
+            central.add_neighbour(Rc::clone(&north_est), RelativePosition::NORTH_EAST);
+            central.add_neighbour(Rc::clone(&east), RelativePosition::EAST);
+            central.add_neighbour(Rc::clone(&south_east), RelativePosition::SOUTH_EST);
+            central.add_neighbour(Rc::clone(&south), RelativePosition::SOUTH);
+            central.add_neighbour(Rc::clone(&south_west), RelativePosition::SOUTH_WEST);
+            central.add_neighbour(Rc::clone(&west), RelativePosition::WEST);
+            central.add_neighbour(Rc::clone(&north_west), RelativePosition::NORTH_WEST);
+
+            central.tick();
+
+            assert_eq!(central.is_alive(), true);
+        }
     }
 }
