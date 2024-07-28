@@ -177,23 +177,6 @@ mod cell_tests {
         assert_eq!(east_neighbours, 1);
     }
 
-    #[test]
-    fn should_be_alive_when_have_one_neighbour_alive_at_next_tick() {
-        let north = Rc::new(Cell::new_alive());
-        let east = Rc::new(Cell::new_alive());
-        let south = Rc::new(Cell::new_alive());
-        let west = Rc::new(Cell::new_alive());
-        let mut central = Cell::new_alive();
-        central.add_neighbour(Rc::clone(&north), RelativePosition::North);
-        central.add_neighbour(Rc::clone(&east), RelativePosition::East);
-        central.add_neighbour(Rc::clone(&south), RelativePosition::South);
-        central.add_neighbour(Rc::clone(&west), RelativePosition::West);
-
-        let new_cell = central.tick();
-
-        assert_eq!(new_cell.is_alive(), true);
-    }
-
     mod game_rules {
         use std::cell::RefCell;
         use std::rc::Rc;
@@ -220,9 +203,9 @@ mod cell_tests {
             central.borrow_mut().add_neighbour(Rc::clone(&west), RelativePosition::West);
             central.borrow_mut().add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
 
-            central.borrow_mut().tick();
+            let new_cell = central.borrow_mut().tick();
 
-            assert_eq!(central.borrow().is_alive(), false);
+            assert_eq!(new_cell.is_alive(), false);
         }
 
         // Any live cell with two or three live neighbours lives on to the next generation.
@@ -246,9 +229,9 @@ mod cell_tests {
             central.add_neighbour(Rc::clone(&west), RelativePosition::West);
             central.add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
 
-            central.tick();
+            let new_cell = central.tick();
 
-            assert_eq!(central.is_alive(), true);
+            assert_eq!(new_cell.is_alive(), true);
         }
 
         // Any live cell with more than three live neighbours dies, as if by overcrowding.
@@ -272,9 +255,9 @@ mod cell_tests {
             central.add_neighbour(Rc::clone(&west), RelativePosition::West);
             central.add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
 
-            central.tick();
+            let new_cell = central.tick();
 
-            assert_eq!(central.is_alive(), false);
+            assert_eq!(new_cell.is_alive(), false);
         }
 
         // Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
@@ -298,9 +281,9 @@ mod cell_tests {
             central.add_neighbour(Rc::clone(&west), RelativePosition::West);
             central.add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
 
-            central.tick();
+            let new_cell = central.tick();
 
-            assert_eq!(central.is_alive(), true);
+            assert_eq!(new_cell.is_alive(), true);
         }
     }
 }
