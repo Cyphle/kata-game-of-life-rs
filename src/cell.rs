@@ -8,14 +8,14 @@ pub enum CellState {
 
 #[derive(Debug, PartialEq)]
 pub enum RelativePosition {
-    NORTH,
-    NORTH_EAST,
-    EAST,
-    SOUTH_EST,
-    SOUTH,
-    SOUTH_WEST,
-    WEST,
-    NORTH_WEST,
+    North,
+    NorthEast,
+    East,
+    SouthEast,
+    South,
+    SouthWest,
+    West,
+    NorthWest,
 }
 
 #[derive(Debug, PartialEq)]
@@ -114,7 +114,7 @@ mod cell_tests {
         let neighbour = Cell::new_alive();
         let ref_neighbour = Rc::new(neighbour);
 
-        cell.add_neighbour(Rc::clone(&ref_neighbour), RelativePosition::NORTH);
+        cell.add_neighbour(Rc::clone(&ref_neighbour), RelativePosition::North);
 
         assert_eq!(cell.number_of_neighbours(), 1);
     }
@@ -134,14 +134,14 @@ mod cell_tests {
         let neighbour_one = Rc::new(Cell::new_alive());
         let neighbour_two = Rc::new(Cell::new_alive());
 
-        cell.add_neighbour(Rc::clone(&neighbour_one), RelativePosition::EAST);
-        cell.add_neighbour(Rc::clone(&neighbour_two), RelativePosition::EAST);
+        cell.add_neighbour(Rc::clone(&neighbour_one), RelativePosition::East);
+        cell.add_neighbour(Rc::clone(&neighbour_two), RelativePosition::East);
 
         let east_neighbours: usize = cell
             .neighbours
             .into_iter()
             .filter(|(_, position)| match position {
-                RelativePosition::EAST => { true }
+                RelativePosition::East => { true }
                 _ => { false }
             })
             .map(|(cell, _)| cell)
@@ -156,10 +156,10 @@ mod cell_tests {
         let south = Rc::new(Cell::new_alive());
         let west = Rc::new(Cell::new_alive());
         let mut central = Cell::new_alive();
-        central.add_neighbour(Rc::clone(&north), RelativePosition::NORTH);
-        central.add_neighbour(Rc::clone(&east), RelativePosition::EAST);
-        central.add_neighbour(Rc::clone(&south), RelativePosition::SOUTH);
-        central.add_neighbour(Rc::clone(&west), RelativePosition::WEST);
+        central.add_neighbour(Rc::clone(&north), RelativePosition::North);
+        central.add_neighbour(Rc::clone(&east), RelativePosition::East);
+        central.add_neighbour(Rc::clone(&south), RelativePosition::South);
+        central.add_neighbour(Rc::clone(&west), RelativePosition::West);
 
         central.tick();
 
@@ -183,14 +183,14 @@ mod cell_tests {
             let west = Rc::new(Cell::new_dead());
             let north_west = Rc::new(Cell::new_dead());
             let mut central = Rc::new(RefCell::new(Cell::new_alive()));
-            central.borrow_mut().add_neighbour(Rc::clone(&north), RelativePosition::NORTH);
-            central.borrow_mut().add_neighbour(Rc::clone(&north_est), RelativePosition::NORTH_EAST);
-            central.borrow_mut().add_neighbour(Rc::clone(&east), RelativePosition::EAST);
-            central.borrow_mut().add_neighbour(Rc::clone(&south_east), RelativePosition::SOUTH_EST);
-            central.borrow_mut().add_neighbour(Rc::clone(&south), RelativePosition::SOUTH);
-            central.borrow_mut().add_neighbour(Rc::clone(&south_west), RelativePosition::SOUTH_WEST);
-            central.borrow_mut().add_neighbour(Rc::clone(&west), RelativePosition::WEST);
-            central.borrow_mut().add_neighbour(Rc::clone(&north_west), RelativePosition::NORTH_WEST);
+            central.borrow_mut().add_neighbour(Rc::clone(&north), RelativePosition::North);
+            central.borrow_mut().add_neighbour(Rc::clone(&north_est), RelativePosition::NorthEast);
+            central.borrow_mut().add_neighbour(Rc::clone(&east), RelativePosition::East);
+            central.borrow_mut().add_neighbour(Rc::clone(&south_east), RelativePosition::SouthEast);
+            central.borrow_mut().add_neighbour(Rc::clone(&south), RelativePosition::South);
+            central.borrow_mut().add_neighbour(Rc::clone(&south_west), RelativePosition::SouthWest);
+            central.borrow_mut().add_neighbour(Rc::clone(&west), RelativePosition::West);
+            central.borrow_mut().add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
 
             central.borrow_mut().tick();
 
@@ -209,14 +209,14 @@ mod cell_tests {
             let west = Rc::new(Cell::new_dead());
             let north_west = Rc::new(Cell::new_dead());
             let mut central = Cell::new_alive();
-            central.add_neighbour(Rc::clone(&north), RelativePosition::NORTH);
-            central.add_neighbour(Rc::clone(&north_est), RelativePosition::NORTH_EAST);
-            central.add_neighbour(Rc::clone(&east), RelativePosition::EAST);
-            central.add_neighbour(Rc::clone(&south_east), RelativePosition::SOUTH_EST);
-            central.add_neighbour(Rc::clone(&south), RelativePosition::SOUTH);
-            central.add_neighbour(Rc::clone(&south_west), RelativePosition::SOUTH_WEST);
-            central.add_neighbour(Rc::clone(&west), RelativePosition::WEST);
-            central.add_neighbour(Rc::clone(&north_west), RelativePosition::NORTH_WEST);
+            central.add_neighbour(Rc::clone(&north), RelativePosition::North);
+            central.add_neighbour(Rc::clone(&north_est), RelativePosition::NorthEast);
+            central.add_neighbour(Rc::clone(&east), RelativePosition::East);
+            central.add_neighbour(Rc::clone(&south_east), RelativePosition::SouthEast);
+            central.add_neighbour(Rc::clone(&south), RelativePosition::South);
+            central.add_neighbour(Rc::clone(&south_west), RelativePosition::SouthWest);
+            central.add_neighbour(Rc::clone(&west), RelativePosition::West);
+            central.add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
 
             central.tick();
 
@@ -235,14 +235,14 @@ mod cell_tests {
             let west = Rc::new(Cell::new_dead());
             let north_west = Rc::new(Cell::new_dead());
             let mut central = Cell::new_alive();
-            central.add_neighbour(Rc::clone(&north), RelativePosition::NORTH);
-            central.add_neighbour(Rc::clone(&north_est), RelativePosition::NORTH_EAST);
-            central.add_neighbour(Rc::clone(&east), RelativePosition::EAST);
-            central.add_neighbour(Rc::clone(&south_east), RelativePosition::SOUTH_EST);
-            central.add_neighbour(Rc::clone(&south), RelativePosition::SOUTH);
-            central.add_neighbour(Rc::clone(&south_west), RelativePosition::SOUTH_WEST);
-            central.add_neighbour(Rc::clone(&west), RelativePosition::WEST);
-            central.add_neighbour(Rc::clone(&north_west), RelativePosition::NORTH_WEST);
+            central.add_neighbour(Rc::clone(&north), RelativePosition::North);
+            central.add_neighbour(Rc::clone(&north_est), RelativePosition::NorthEast);
+            central.add_neighbour(Rc::clone(&east), RelativePosition::East);
+            central.add_neighbour(Rc::clone(&south_east), RelativePosition::SouthEast);
+            central.add_neighbour(Rc::clone(&south), RelativePosition::South);
+            central.add_neighbour(Rc::clone(&south_west), RelativePosition::SouthWest);
+            central.add_neighbour(Rc::clone(&west), RelativePosition::West);
+            central.add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
 
             central.tick();
 
@@ -261,14 +261,14 @@ mod cell_tests {
             let west = Rc::new(Cell::new_dead());
             let north_west = Rc::new(Cell::new_dead());
             let mut central = Cell::new_dead();
-            central.add_neighbour(Rc::clone(&north), RelativePosition::NORTH);
-            central.add_neighbour(Rc::clone(&north_est), RelativePosition::NORTH_EAST);
-            central.add_neighbour(Rc::clone(&east), RelativePosition::EAST);
-            central.add_neighbour(Rc::clone(&south_east), RelativePosition::SOUTH_EST);
-            central.add_neighbour(Rc::clone(&south), RelativePosition::SOUTH);
-            central.add_neighbour(Rc::clone(&south_west), RelativePosition::SOUTH_WEST);
-            central.add_neighbour(Rc::clone(&west), RelativePosition::WEST);
-            central.add_neighbour(Rc::clone(&north_west), RelativePosition::NORTH_WEST);
+            central.add_neighbour(Rc::clone(&north), RelativePosition::North);
+            central.add_neighbour(Rc::clone(&north_est), RelativePosition::NorthEast);
+            central.add_neighbour(Rc::clone(&east), RelativePosition::East);
+            central.add_neighbour(Rc::clone(&south_east), RelativePosition::SouthEast);
+            central.add_neighbour(Rc::clone(&south), RelativePosition::South);
+            central.add_neighbour(Rc::clone(&south_west), RelativePosition::SouthWest);
+            central.add_neighbour(Rc::clone(&west), RelativePosition::West);
+            central.add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
 
             central.tick();
 
