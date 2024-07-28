@@ -21,7 +21,7 @@ struct Universe {
 
 impl Universe {
     fn tick(&self) {
-
+        // TODO au tick il faut remplacer toutes les cellules
     }
 
     fn print(&self) -> Vec<String> {

@@ -45,20 +45,48 @@ impl Cell {
         self.neighbours.len()
     }
 
-    pub fn tick(&mut self) {
+    // TODO en fait le tick doit renvoyer une nouvelle version au lieu de mut
+    pub fn tick(&self) -> Cell {
+        let copy_of_neighbours = self.neighbours
+            .iter()
+            .map(|(n, position)| (
+                Rc::clone(n),
+                match position {
+                    RelativePosition::North => RelativePosition::North,
+                    RelativePosition::NorthEast => RelativePosition::NorthEast,
+                    RelativePosition::East => RelativePosition::East,
+                    RelativePosition::SouthEast => RelativePosition::SouthEast,
+                    RelativePosition::South => RelativePosition::South,
+                    RelativePosition::SouthWest => RelativePosition::SouthWest,
+                    RelativePosition::West => RelativePosition::West,
+                    RelativePosition::NorthWest => RelativePosition::NorthWest,
+                }
+            ))
+            .collect();
+
         let number_of_live_neighbours = self.count_live_neighbours();
         match number_of_live_neighbours {
             n if n < 2 || n > 3 => {
-                if self.is_alive() {
-                    self.state = CellState::DEAD;
+                Cell {
+                    state: CellState::DEAD,
+                    neighbours: copy_of_neighbours,
                 }
             }
             3 => {
-                if self.is_dead() {
-                    self.state = CellState::ALIVE
+                Cell {
+                    state: CellState::ALIVE,
+                    neighbours: copy_of_neighbours,
                 }
             }
-            _ => {}
+            _ => {
+                Cell {
+                    state: match self.state {
+                        CellState::ALIVE => CellState::ALIVE,
+                        CellState::DEAD => CellState::DEAD,
+                    },
+                    neighbours: copy_of_neighbours,
+                }
+            }
         }
     }
 
@@ -161,9 +189,9 @@ mod cell_tests {
         central.add_neighbour(Rc::clone(&south), RelativePosition::South);
         central.add_neighbour(Rc::clone(&west), RelativePosition::West);
 
-        central.tick();
+        let new_cell = central.tick();
 
-        assert_eq!(central.is_alive(), true);
+        assert_eq!(new_cell.is_alive(), true);
     }
 
     mod game_rules {
