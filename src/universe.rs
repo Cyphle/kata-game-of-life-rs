@@ -35,9 +35,6 @@ impl Universe {
     }
 
     fn new(width: u32, height: u32) -> Universe {
-        let mut cells = vec![];
-
-
         // TODO Ajouter les voisins.
         /*
         Si x = 0, alors on est sur la première ligne
@@ -58,14 +55,31 @@ impl Universe {
                     Si y a quelqu'un, il faut aussi ajouter c à ce voisin
          */
 
-
+        let mut cells = vec![];
         for x in UNIVERSE_START_INDEX..width {
+            let line = vec![];
+
             for y in UNIVERSE_START_INDEX..height {
                 let state = rand::thread_rng().gen_range(0..2);
                 let cell = match state {
                     0 => Rc::new(RefCell::new(Cell::new_dead())),
                     _ => Rc::new(RefCell::new(Cell::new_alive())),
                 };
+
+                for p in x-1..=x+1 {
+                    if p >= 0 && p < width {
+                        for q in y-1..=y+1 {
+                            if q >= 0 && q < height {
+                                // TODO to be continued
+                                // if vec.get(index).is_none() {
+                                //     None
+                                // } else {
+                                //     Some(vec.swap_remove(index))
+                                // }
+                            }
+                        }
+                    }
+                }
             }
 
             cells.push(CellPosition {
