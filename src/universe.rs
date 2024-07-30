@@ -55,6 +55,18 @@ impl Universe {
             Si x = universe.width - 1, alors on est sur la dernière ligne
             Si y = 0, alors on est sur la première colonne
             Si y = universe.height - 1, alors on est sur la derniere colonne
+
+            Algo possible pour limiter la complexité et rester en O(n) ou O(2n)
+            Pour n = 0 à x:
+                Pour m = 0 à y:
+                    Crate Cell c à la position (x, y) avec un state aléatoire
+                    Ajouter les voisins à c,
+                        Si x = 0, il n'y a pas de voisins à x - 1
+                        Si x = width - 1, il n'y a pas de voisin à x + 1
+                        Si y = 0, il n'y a pas de voisin à y - 1
+                        Si y = height - 1, il n'y a pas de voisin à y + 1
+                        En prenant en compte ces cas, il faut, pour x - 1 < p < x + 1 et y - 1 < q < y + 1, vérifier s'il y a quelqu'un et si oui ajouter
+                        Si y a quelqu'un, il faut aussi ajouter c à ce voisin
              */
         }
 
