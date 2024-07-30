@@ -36,38 +36,43 @@ impl Universe {
 
     fn new(width: u32, height: u32) -> Universe {
         let mut cells = vec![];
+
+
+        // TODO Ajouter les voisins.
+        /*
+        Si x = 0, alors on est sur la première ligne
+        Si x = universe.width - 1, alors on est sur la dernière ligne
+        Si y = 0, alors on est sur la première colonne
+        Si y = universe.height - 1, alors on est sur la derniere colonne
+
+        Algo possible pour limiter la complexité et rester en O(n) ou O(2n)
+        Pour n = 0 à x:
+            Pour m = 0 à y:
+                Crate Cell c à la position (x, y) avec un state aléatoire
+                Ajouter les voisins à c,
+                    Si x = 0, il n'y a pas de voisins à x - 1
+                    Si x = width - 1, il n'y a pas de voisin à x + 1
+                    Si y = 0, il n'y a pas de voisin à y - 1
+                    Si y = height - 1, il n'y a pas de voisin à y + 1
+                    En prenant en compte ces cas, il faut, pour x - 1 < p < x + 1 et y - 1 < q < y + 1, vérifier s'il y a quelqu'un et si oui ajouter
+                    Si y a quelqu'un, il faut aussi ajouter c à ce voisin
+         */
+
+
         for x in UNIVERSE_START_INDEX..width {
-            let state = rand::thread_rng().gen_range(0..2);
+            for y in UNIVERSE_START_INDEX..height {
+                let state = rand::thread_rng().gen_range(0..2);
+                let cell = match state {
+                    0 => Rc::new(RefCell::new(Cell::new_dead())),
+                    _ => Rc::new(RefCell::new(Cell::new_alive())),
+                };
+            }
+
             cells.push(CellPosition {
                 x,
                 y: 1,
-                cell: match state {
-                    0 => Rc::new(RefCell::new(Cell::new_dead())),
-                    _ => Rc::new(RefCell::new(Cell::new_alive())),
-                }
+                cell:
             })
-        }
-
-        for x in &cells {
-            // TODO Ajouter les voisins.
-            /*
-            Si x = 0, alors on est sur la première ligne
-            Si x = universe.width - 1, alors on est sur la dernière ligne
-            Si y = 0, alors on est sur la première colonne
-            Si y = universe.height - 1, alors on est sur la derniere colonne
-
-            Algo possible pour limiter la complexité et rester en O(n) ou O(2n)
-            Pour n = 0 à x:
-                Pour m = 0 à y:
-                    Crate Cell c à la position (x, y) avec un state aléatoire
-                    Ajouter les voisins à c,
-                        Si x = 0, il n'y a pas de voisins à x - 1
-                        Si x = width - 1, il n'y a pas de voisin à x + 1
-                        Si y = 0, il n'y a pas de voisin à y - 1
-                        Si y = height - 1, il n'y a pas de voisin à y + 1
-                        En prenant en compte ces cas, il faut, pour x - 1 < p < x + 1 et y - 1 < q < y + 1, vérifier s'il y a quelqu'un et si oui ajouter
-                        Si y a quelqu'un, il faut aussi ajouter c à ce voisin
-             */
         }
 
         Universe {
