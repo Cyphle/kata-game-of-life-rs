@@ -3,20 +3,20 @@ use std::rc::Rc;
 use crate::cell::Cell;
 use rand::Rng;
 
-static UNIVERSE_START_INDEX: u32 = 0;
+static UNIVERSE_START_INDEX: usize = 0;
 
 #[derive(Debug, PartialEq)]
 struct CellPosition {
-    x: u32,
-    y: u32,
+    x: usize,
+    y: usize,
     cell: Rc<RefCell<Cell>>,
 }
 
 #[derive(Debug, PartialEq)]
 struct Universe {
-    width: u32,
-    height: u32,
-    cells: Vec<CellPosition>,
+    width: usize,
+    height: usize,
+    cells: Vec<Vec<CellPosition>>,
 }
 
 impl Universe {
@@ -25,8 +25,14 @@ impl Universe {
     }
 
     fn print(&self) -> Vec<String> {
-        let to_print: Vec<String> = self.cells.iter().map(|x| x.cell.borrow().print()).collect();
-        vec![to_print.join(" ")]
+        let to_print: Vec<String> = self
+            .cells
+            .iter()
+            .map(|x| x.iter().map(|y|
+                 y.cell.borrow().print()).collect::<Vec<String>>().join(" ")
+            )
+            .collect();
+        to_print
     }
 
     fn print_check(&self) -> Vec<String> {
@@ -34,7 +40,7 @@ impl Universe {
         vec![to_print.join(" ")]
     }
 
-    fn new(width: u32, height: u32) -> Universe {
+    fn new(width: usize, height: usize) -> Universe {
         // TODO Ajouter les voisins.
         /*
         Si x = 0, alors on est sur la première ligne
@@ -55,39 +61,47 @@ impl Universe {
                     Si y a quelqu'un, il faut aussi ajouter c à ce voisin
          */
 
-        let mut cells = vec![];
-        for x in UNIVERSE_START_INDEX..width {
-            let line = vec![];
-
-            for y in UNIVERSE_START_INDEX..height {
+        let mut cells: Vec<Vec<CellPosition>> = vec![];
+        // for x in UNIVERSE_START_INDEX..width {
+            let mut line = vec![];
+        //
+        //     for y in UNIVERSE_START_INDEX..height {
                 let state = rand::thread_rng().gen_range(0..2);
                 let cell = match state {
                     0 => Rc::new(RefCell::new(Cell::new_dead())),
                     _ => Rc::new(RefCell::new(Cell::new_alive())),
                 };
+        //
+        //         for p in x-1..=x+1 {
+        //             if p >= 0 && p < width {
+        //                 for q in y-1..=y+1 {
+        //                     if q >= 0 && q < height {
+        //                         match cells.get(p) {
+        //                             Some(current_column) => {
+        //                                 match current_column.get(q) {
+        //                                     Some(current_cell) => {
+        //                                         // current_cell.add_neighbour
+        //                                         println!("I am a neighbour");
+        //                                     }
+        //                                     _ => {}
+        //                                 }
+        //                             }
+        //                             _ => {}
+        //                         }
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
 
-                for p in x-1..=x+1 {
-                    if p >= 0 && p < width {
-                        for q in y-1..=y+1 {
-                            if q >= 0 && q < height {
-                                // TODO to be continued
-                                // if vec.get(index).is_none() {
-                                //     None
-                                // } else {
-                                //     Some(vec.swap_remove(index))
-                                // }
-                            }
-                        }
-                    }
-                }
-            }
+        line.push(CellPosition {
+                x: 0,
+                y: 0,
+                cell
+            });
 
-            cells.push(CellPosition {
-                x,
-                y: 1,
-                cell:
-            })
-        }
+        cells.push(line);
+        // }
 
         Universe {
             width,

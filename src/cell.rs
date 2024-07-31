@@ -21,7 +21,7 @@ pub enum RelativePosition {
 #[derive(Debug, PartialEq)]
 pub struct Cell {
     state: CellState,
-    neighbours: Vec<(Rc<Cell>, RelativePosition)>, // TODO faut peut être mieux passer à un Rc en fait. A essayer
+    neighbours: Vec<(Rc<Cell>, RelativePosition)>, // TODO y a peut être pas besoin de relative position
 }
 
 impl Cell {
