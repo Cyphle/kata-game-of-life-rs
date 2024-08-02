@@ -81,8 +81,8 @@ impl Universe {
                                 match cells.get(p) {
                                     Some(current_line) => {
         //                                 match current_column.get(q) {
-        //                                     Some(current_cell) => {
-        //                                         // current_cell.add_neighbour
+        //                                     Some(current_neighbour) => {
+        //                                         // current_neighbour.add_neighbour
                                                 println!("I am a neighbour");
         //                                     }
         //                                     _ => {}
