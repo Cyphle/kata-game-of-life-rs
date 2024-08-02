@@ -62,7 +62,7 @@ impl Universe {
          */
 
         let mut cells: Vec<Vec<CellPosition>> = vec![];
-        // for x in UNIVERSE_START_INDEX..width {
+        for x in UNIVERSE_START_INDEX..width {
             let mut line = vec![];
         //
         //     for y in UNIVERSE_START_INDEX..height {
@@ -72,36 +72,38 @@ impl Universe {
                     _ => Rc::new(RefCell::new(Cell::new_alive())),
                 };
         //
-        //         for p in x-1..=x+1 {
-        //             if p >= 0 && p < width {
+            // TODO en fait au premier tour, x = 0 donc on peut pas faire x - 1
+            let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
+                for p in line_neighbours_start..=x+1 {
+                    if p >= 0 && p < width {
         //                 for q in y-1..=y+1 {
         //                     if q >= 0 && q < height {
-        //                         match cells.get(p) {
-        //                             Some(current_column) => {
+                                match cells.get(p) {
+                                    Some(current_line) => {
         //                                 match current_column.get(q) {
         //                                     Some(current_cell) => {
         //                                         // current_cell.add_neighbour
-        //                                         println!("I am a neighbour");
+                                                println!("I am a neighbour");
         //                                     }
         //                                     _ => {}
         //                                 }
-        //                             }
-        //                             _ => {}
-        //                         }
+                                    }
+                                    _ => {}
+                                }
         //                     }
         //                 }
         //             }
-        //         }
-        //     }
+                }
+            }
 
         line.push(CellPosition {
-                x: 0,
+                x,
                 y: 0,
                 cell
             });
 
         cells.push(line);
-        // }
+        }
 
         Universe {
             width,
