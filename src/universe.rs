@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::cell::Cell;
+use crate::cell::{Cell, RelativePosition};
 use rand::Rng;
 
 static UNIVERSE_START_INDEX: usize = 0;
@@ -85,6 +85,8 @@ impl Universe {
                                             Some(current_neighbour) => {
                                                 // current_neighbour.add_neighbour
                                                 println!("I am a neighbour {}", current_neighbour.cell.borrow().print());
+                                                cell.borrow_mut().add_neighbour(Rc::clone(&current_neighbour.cell), RelativePosition::North);
+                                                current_neighbour.cell.borrow_mut().add_neighbour(Rc::clone(&cell), RelativePosition::South);
                                             }
                                             _ => {}
                                         }

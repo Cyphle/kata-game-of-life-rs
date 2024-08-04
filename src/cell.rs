@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::rc::Rc;
 
 #[derive(Debug, PartialEq)]
@@ -21,7 +22,7 @@ pub enum RelativePosition {
 #[derive(Debug, PartialEq)]
 pub struct Cell {
     state: CellState,
-    neighbours: Vec<(Rc<Cell>, RelativePosition)>, // TODO y a peut être pas besoin de relative position
+    neighbours: Vec<(Rc<RefCell<Cell>>, RelativePosition)>, // TODO y a peut être pas besoin de relative position
 }
 
 impl Cell {
@@ -35,7 +36,7 @@ impl Cell {
         !self.is_alive()
     }
 
-    pub fn add_neighbour(&mut self, neighbour: Rc<Cell>, position: RelativePosition) {
+    pub fn add_neighbour(&mut self, neighbour: Rc<RefCell<Cell>>, position: RelativePosition) {
         if !self.has_neighbour_at_position(&position) {
             self.neighbours.push((neighbour, position));
         }
@@ -45,7 +46,6 @@ impl Cell {
         self.neighbours.len()
     }
 
-    // TODO en fait le tick doit renvoyer une nouvelle version au lieu de mut
     pub fn tick(&self) -> Cell {
         let copy_of_neighbours = self.neighbours
             .iter()
@@ -127,7 +127,7 @@ impl Cell {
         self
             .neighbours
             .iter()
-            .map(|(cell, _)| cell.is_alive())
+            .map(|(cell, _)| cell.borrow().is_alive())
             .filter(|x| *x == true)
             .count()
     }
@@ -145,7 +145,7 @@ mod cell_tests {
     fn should_add_neighbour_to_cell() {
         let mut cell = Cell::new_alive();
         let neighbour = Cell::new_alive();
-        let ref_neighbour = Rc::new(neighbour);
+        let ref_neighbour = Rc::new(RefCell::new(neighbour));
 
         cell.add_neighbour(Rc::clone(&ref_neighbour), RelativePosition::North);
 
@@ -164,8 +164,8 @@ mod cell_tests {
     #[test]
     fn should_not_be_able_to_add_two_neighbours_at_same_position() {
         let mut cell = Cell::new_alive();
-        let neighbour_one = Rc::new(Cell::new_alive());
-        let neighbour_two = Rc::new(Cell::new_alive());
+        let neighbour_one = Rc::new(RefCell::new(Cell::new_alive()));
+        let neighbour_two = Rc::new(RefCell::new(Cell::new_alive()));
 
         cell.add_neighbour(Rc::clone(&neighbour_one), RelativePosition::East);
         cell.add_neighbour(Rc::clone(&neighbour_two), RelativePosition::East);
@@ -190,14 +190,14 @@ mod cell_tests {
         // Any live cell with fewer than two live neighbours dies, as if caused by under-population.
         #[test]
         fn should_be_dead_when_have_one_neighbour_alive_at_next_tick() {
-            let north = Rc::new(Cell::new_alive());
-            let north_est = Rc::new(Cell::new_dead());
-            let east = Rc::new(Cell::new_dead());
-            let south_east = Rc::new(Cell::new_dead());
-            let south = Rc::new(Cell::new_dead());
-            let south_west = Rc::new(Cell::new_dead());
-            let west = Rc::new(Cell::new_dead());
-            let north_west = Rc::new(Cell::new_dead());
+            let north = Rc::new(RefCell::new(Cell::new_alive()));
+            let north_est = Rc::new(RefCell::new(Cell::new_dead()));
+            let east = Rc::new(RefCell::new(Cell::new_dead()));
+            let south_east = Rc::new(RefCell::new(Cell::new_dead()));
+            let south = Rc::new(RefCell::new(Cell::new_dead()));
+            let south_west = Rc::new(RefCell::new(Cell::new_dead()));
+            let west = Rc::new(RefCell::new(Cell::new_dead()));
+            let north_west = Rc::new(RefCell::new(Cell::new_dead()));
             let mut central = Rc::new(RefCell::new(Cell::new_alive()));
             central.borrow_mut().add_neighbour(Rc::clone(&north), RelativePosition::North);
             central.borrow_mut().add_neighbour(Rc::clone(&north_est), RelativePosition::NorthEast);
@@ -216,14 +216,14 @@ mod cell_tests {
         // Any live cell with two or three live neighbours lives on to the next generation.
         #[test]
         fn should_be_alive_when_have_two_or_three_neighbours_alive_at_next_tick() {
-            let north = Rc::new(Cell::new_alive());
-            let north_est = Rc::new(Cell::new_alive());
-            let east = Rc::new(Cell::new_alive());
-            let south_east = Rc::new(Cell::new_dead());
-            let south = Rc::new(Cell::new_dead());
-            let south_west = Rc::new(Cell::new_dead());
-            let west = Rc::new(Cell::new_dead());
-            let north_west = Rc::new(Cell::new_dead());
+            let north = Rc::new(RefCell::new(Cell::new_alive()));
+            let north_est = Rc::new(RefCell::new(Cell::new_alive()));
+            let east = Rc::new(RefCell::new(Cell::new_alive()));
+            let south_east = Rc::new(RefCell::new(Cell::new_dead()));
+            let south = Rc::new(RefCell::new(Cell::new_dead()));
+            let south_west = Rc::new(RefCell::new(Cell::new_dead()));
+            let west = Rc::new(RefCell::new(Cell::new_dead()));
+            let north_west = Rc::new(RefCell::new(Cell::new_dead()));
             let mut central = Cell::new_alive();
             central.add_neighbour(Rc::clone(&north), RelativePosition::North);
             central.add_neighbour(Rc::clone(&north_est), RelativePosition::NorthEast);
@@ -242,14 +242,14 @@ mod cell_tests {
         // Any live cell with more than three live neighbours dies, as if by overcrowding.
         #[test]
         fn should_be_dead_when_more_then_three_neighbours_alive_at_next_tick() {
-            let north = Rc::new(Cell::new_alive());
-            let north_est = Rc::new(Cell::new_alive());
-            let east = Rc::new(Cell::new_alive());
-            let south_east = Rc::new(Cell::new_alive());
-            let south = Rc::new(Cell::new_dead());
-            let south_west = Rc::new(Cell::new_dead());
-            let west = Rc::new(Cell::new_dead());
-            let north_west = Rc::new(Cell::new_dead());
+            let north = Rc::new(RefCell::new(Cell::new_alive()));
+            let north_est = Rc::new(RefCell::new(Cell::new_alive()));
+            let east = Rc::new(RefCell::new(Cell::new_alive()));
+            let south_east = Rc::new(RefCell::new(Cell::new_alive()));
+            let south = Rc::new(RefCell::new(Cell::new_dead()));
+            let south_west = Rc::new(RefCell::new(Cell::new_dead()));
+            let west = Rc::new(RefCell::new(Cell::new_dead()));
+            let north_west = Rc::new(RefCell::new(Cell::new_dead()));
             let mut central = Cell::new_alive();
             central.add_neighbour(Rc::clone(&north), RelativePosition::North);
             central.add_neighbour(Rc::clone(&north_est), RelativePosition::NorthEast);
@@ -268,14 +268,14 @@ mod cell_tests {
         // Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
         #[test]
         fn should_be_alive_when_three_live_neighbours_alive_at_next_tick() {
-            let north = Rc::new(Cell::new_alive());
-            let north_est = Rc::new(Cell::new_alive());
-            let east = Rc::new(Cell::new_alive());
-            let south_east = Rc::new(Cell::new_dead());
-            let south = Rc::new(Cell::new_dead());
-            let south_west = Rc::new(Cell::new_dead());
-            let west = Rc::new(Cell::new_dead());
-            let north_west = Rc::new(Cell::new_dead());
+            let north = Rc::new(RefCell::new(Cell::new_alive()));
+            let north_est = Rc::new(RefCell::new(Cell::new_alive()));
+            let east = Rc::new(RefCell::new(Cell::new_alive()));
+            let south_east = Rc::new(RefCell::new(Cell::new_dead()));
+            let south = Rc::new(RefCell::new(Cell::new_dead()));
+            let south_west = Rc::new(RefCell::new(Cell::new_dead()));
+            let west = Rc::new(RefCell::new(Cell::new_dead()));
+            let north_west = Rc::new(RefCell::new(Cell::new_dead()));
             let mut central = Cell::new_dead();
             central.add_neighbour(Rc::clone(&north), RelativePosition::North);
             central.add_neighbour(Rc::clone(&north_est), RelativePosition::NorthEast);
