@@ -112,10 +112,15 @@ impl Cell {
     }
 
     pub fn print(&self) -> String {
-        match self.is_alive() {
+        let print = match self.is_alive() {
             true => { "x".to_string() }
             false => { "o".to_string() }
-        }
+        };
+        format!("{} and {}", print, self.print_neighbours_count())
+    }
+
+    fn print_neighbours_count(&self) -> String {
+        return format!("I have {} neighbours", self.neighbours.len());
     }
 
     fn count_live_neighbours(&self) -> usize {
