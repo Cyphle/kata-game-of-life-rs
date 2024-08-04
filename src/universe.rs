@@ -71,20 +71,18 @@ impl Universe {
                     0 => Rc::new(RefCell::new(Cell::new_dead())),
                     _ => Rc::new(RefCell::new(Cell::new_alive())),
                 };
-                //
+
                 // TODO en fait au premier tour, x = 0 donc on peut pas faire x - 1
                 let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
                 for p in line_neighbours_start..=x + 1 {
                     if p >= 0 && p < width {
                         let column_neighbours_start = if y > 0 { y - 1 } else { 0 };
-                        for q in line_neighbours_start..=y + 1 {
+                        for q in column_neighbours_start..=y + 1 {
                             if q >= 0 && q < height {
                                 match cells.get(p) {
                                     Some(current_line) => {
                                         match current_line.get(q) {
                                             Some(current_neighbour) => {
-                                                // current_neighbour.add_neighbour
-                                                println!("I am a neighbour {}", current_neighbour.cell.borrow().print());
                                                 cell.borrow_mut().add_neighbour(Rc::clone(&current_neighbour.cell), RelativePosition::North);
                                                 current_neighbour.cell.borrow_mut().add_neighbour(Rc::clone(&cell), RelativePosition::South);
                                             }
