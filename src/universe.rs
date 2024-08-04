@@ -29,7 +29,7 @@ impl Universe {
             .cells
             .iter()
             .map(|x| x.iter().map(|y|
-                 y.cell.borrow().print()).collect::<Vec<String>>().join(" ")
+                y.cell.borrow().print()).collect::<Vec<String>>().join(" ")
             )
             .collect();
         to_print
@@ -64,51 +64,51 @@ impl Universe {
         let mut cells: Vec<Vec<CellPosition>> = vec![];
         for x in UNIVERSE_START_INDEX..width {
             let mut line = vec![];
-        //
-        //     for y in UNIVERSE_START_INDEX..height {
+
+            for y in UNIVERSE_START_INDEX..height {
                 let state = rand::thread_rng().gen_range(0..2);
                 let cell = match state {
                     0 => Rc::new(RefCell::new(Cell::new_dead())),
                     _ => Rc::new(RefCell::new(Cell::new_alive())),
                 };
-        //
-            // TODO en fait au premier tour, x = 0 donc on peut pas faire x - 1
-            let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
-                for p in line_neighbours_start..=x+1 {
+                //
+                // TODO en fait au premier tour, x = 0 donc on peut pas faire x - 1
+                let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
+                for p in line_neighbours_start..=x + 1 {
                     if p >= 0 && p < width {
-        //                 for q in y-1..=y+1 {
-        //                     if q >= 0 && q < height {
-                                match cells.get(p) {
-                                    Some(current_line) => {
-        //                                 match current_column.get(q) {
-        //                                     Some(current_neighbour) => {
-        //                                         // current_neighbour.add_neighbour
-                                                println!("I am a neighbour");
-        //                                     }
-        //                                     _ => {}
-        //                                 }
-                                    }
-                                    _ => {}
-                                }
-        //                     }
-        //                 }
-        //             }
+                        //                 for q in y-1..=y+1 {
+                        //                     if q >= 0 && q < height {
+                        match cells.get(p) {
+                            Some(current_line) => {
+                                //                                 match current_column.get(q) {
+                                //                                     Some(current_neighbour) => {
+                                //                                         // current_neighbour.add_neighbour
+                                println!("I am a neighbour");
+                                //                                     }
+                                //                                     _ => {}
+                                //                                 }
+                            }
+                            _ => {}
+                        }
+                        //                     }
+                        //                 }
+                    }
                 }
+
+                line.push(CellPosition {
+                    x,
+                    y,
+                    cell,
+                });
             }
 
-        line.push(CellPosition {
-                x,
-                y: 0,
-                cell
-            });
-
-        cells.push(line);
+            cells.push(line);
         }
 
         Universe {
             width,
             height,
-            cells
+            cells,
         }
     }
 }
@@ -130,6 +130,16 @@ mod universe_tests {
     #[test]
     fn should_be_able_to_generate_a_linear_universe_of_two_cells() {
         let universe = Universe::new(2, 1);
+
+        print_universe(&universe);
+        for line_to_print in universe.print_check() {
+            assert_eq!(line_to_print, "x x");
+        }
+    }
+
+    #[test]
+    fn should_be_able_to_generate_a_square_universe_of_two_cells() {
+        let universe = Universe::new(2, 2);
 
         print_universe(&universe);
         for line_to_print in universe.print_check() {
