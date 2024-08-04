@@ -154,7 +154,7 @@ mod cell_tests {
 
     #[test]
     fn should_be_alive_at_next_tick_when_alive() {
-        let mut cell = Cell::new_alive();
+        let cell = Cell::new_alive();
 
         cell.tick();
 
@@ -185,6 +185,7 @@ mod cell_tests {
     mod game_rules {
         use std::cell::RefCell;
         use std::rc::Rc;
+
         use crate::cell::{Cell, RelativePosition};
 
         // Any live cell with fewer than two live neighbours dies, as if caused by under-population.
@@ -198,7 +199,7 @@ mod cell_tests {
             let south_west = Rc::new(RefCell::new(Cell::new_dead()));
             let west = Rc::new(RefCell::new(Cell::new_dead()));
             let north_west = Rc::new(RefCell::new(Cell::new_dead()));
-            let mut central = Rc::new(RefCell::new(Cell::new_alive()));
+            let central = Rc::new(RefCell::new(Cell::new_alive()));
             central.borrow_mut().add_neighbour(Rc::clone(&north), RelativePosition::North);
             central.borrow_mut().add_neighbour(Rc::clone(&north_est), RelativePosition::NorthEast);
             central.borrow_mut().add_neighbour(Rc::clone(&east), RelativePosition::East);

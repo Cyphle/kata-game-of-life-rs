@@ -94,10 +94,10 @@ impl Universe {
     fn add_neighbours(width: usize, height: usize, cells: &mut Vec<Vec<CellPosition>>, x: usize, y: usize, cell: &Rc<RefCell<Cell>>) {
         let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
         for p in line_neighbours_start..=x + 1 {
-            if p >= 0 && p < width {
+            if p < width {
                 let column_neighbours_start = if y > 0 { y - 1 } else { 0 };
                 for q in column_neighbours_start..=y + 1 {
-                    if q >= 0 && q < height {
+                    if q < height {
                         match cells.get(p) {
                             Some(current_line) => {
                                 match current_line.get(q) {

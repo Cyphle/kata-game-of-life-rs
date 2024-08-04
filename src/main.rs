@@ -1,5 +1,3 @@
-use crate::cell::{Cell, CellState};
-
 mod universe;
 mod cell;
 
