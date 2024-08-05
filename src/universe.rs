@@ -64,30 +64,8 @@ impl Universe {
                     _ => Rc::new(RefCell::new(Cell::new_alive())),
                 };
 
-                let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
-                for p in line_neighbours_start..=x + 1 {
-                    if p < width {
-                        let column_neighbours_start = if y > 0 { y - 1 } else { 0 };
-                        for q in column_neighbours_start..=y + 1 {
-                            if q < height {
-                                match cells.get(p) {
-                                    Some(current_line) => {
-                                        match current_line.get(q) {
-                                            Some(current_neighbour) => {
-                                                // TODO en fonction de x, y et p, q déterminer la position relative
-                                                cell.borrow_mut().add_neighbour(Rc::clone(&current_neighbour.cell), RelativePosition::North);
-                                                // TODO en fonction de x, y et p, q déterminer la position relative
-                                                current_neighbour.cell.borrow_mut().add_neighbour(Rc::clone(&&cell), RelativePosition::South);
-                                            }
-                                            _ => {}
-                                        }
-                                    }
-                                    _ => {}
-                                }
-                            }
-                        }
-                    }
-                }
+                // TODO Peut être que les voisins sont inverses aussi...
+                Self::add_neighbours(width, height, &mut cells, x, y, &cell);
 
                 line.push(CellPosition {
                     x,
@@ -103,6 +81,33 @@ impl Universe {
             width,
             height,
             cells,
+        }
+    }
+
+    fn add_neighbours(width: usize, height: usize, cells: &mut Vec<Vec<CellPosition>>, x: usize, y: usize, cell: &Rc<RefCell<Cell>>) {
+        let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
+        for p in line_neighbours_start..=x + 1 {
+            if p < width {
+                let column_neighbours_start = if y > 0 { y - 1 } else { 0 };
+                for q in column_neighbours_start..=y + 1 {
+                    if q < height {
+                        match cells.get(p) {
+                            Some(current_line) => {
+                                match current_line.get(q) {
+                                    Some(current_neighbour) => {
+                                        // TODO en fonction de x, y et p, q déterminer la position relative
+                                        cell.borrow_mut().add_neighbour(Rc::clone(&current_neighbour.cell), RelativePosition::North);
+                                        // TODO en fonction de x, y et p, q déterminer la position relative
+                                        current_neighbour.cell.borrow_mut().add_neighbour(Rc::clone(&&cell), RelativePosition::South);
+                                    }
+                                    _ => {}
+                                }
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+            }
         }
     }
 }
