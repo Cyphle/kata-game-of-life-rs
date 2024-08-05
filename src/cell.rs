@@ -22,6 +22,7 @@ pub enum RelativePosition {
 #[derive(Debug, PartialEq)]
 pub struct Cell {
     state: CellState,
+    next_state: CellState,
     neighbours: Vec<(Rc<RefCell<Cell>>, RelativePosition)>, // TODO y a peut être pas besoin de relative position
 }
 
@@ -46,53 +47,35 @@ impl Cell {
         self.neighbours.len()
     }
 
-    pub fn tick(&self) -> Cell {
-        let copy_of_neighbours = self.neighbours
-            .iter()
-            .map(|(n, position)| (
-                Rc::clone(n),
-                match position {
-                    RelativePosition::North => RelativePosition::North,
-                    RelativePosition::NorthEast => RelativePosition::NorthEast,
-                    RelativePosition::East => RelativePosition::East,
-                    RelativePosition::SouthEast => RelativePosition::SouthEast,
-                    RelativePosition::South => RelativePosition::South,
-                    RelativePosition::SouthWest => RelativePosition::SouthWest,
-                    RelativePosition::West => RelativePosition::West,
-                    RelativePosition::NorthWest => RelativePosition::NorthWest,
-                }
-            ))
-            .collect();
-
+    pub fn pretick(&mut self) {
         let number_of_live_neighbours = self.count_live_neighbours();
         match number_of_live_neighbours {
             n if n < 2 || n > 3 => {
-                Cell {
-                    state: CellState::DEAD,
-                    neighbours: copy_of_neighbours,
-                }
+                self.next_state = CellState::DEAD
             }
             3 => {
-                Cell {
-                    state: CellState::ALIVE,
-                    neighbours: copy_of_neighbours,
-                }
+                self.next_state = CellState::ALIVE
             }
             _ => {
-                Cell {
-                    state: match self.state {
-                        CellState::ALIVE => CellState::ALIVE,
-                        CellState::DEAD => CellState::DEAD,
-                    },
-                    neighbours: copy_of_neighbours,
+                self.next_state = match self.state {
+                    CellState::ALIVE => CellState::ALIVE,
+                    CellState::DEAD => CellState::DEAD,
                 }
             }
+        }
+    }
+
+    pub fn tick(&mut self) {
+        self.state = match self.next_state {
+            CellState::ALIVE => CellState::ALIVE,
+            CellState::DEAD => CellState::DEAD
         }
     }
 
     pub fn new(state: CellState) -> Cell {
         Cell {
             state,
+            next_state: CellState::ALIVE,
             neighbours: vec![],
         }
     }
@@ -100,6 +83,7 @@ impl Cell {
     pub fn new_alive() -> Cell {
         Cell {
             state: CellState::ALIVE,
+            next_state: CellState::ALIVE,
             neighbours: vec![],
         }
     }
@@ -107,6 +91,7 @@ impl Cell {
     pub fn new_dead() -> Cell {
         Cell {
             state: CellState::DEAD,
+            next_state: CellState::ALIVE,
             neighbours: vec![],
         }
     }
@@ -116,7 +101,8 @@ impl Cell {
             true => { "x".to_string() }
             false => { "o".to_string() }
         };
-        format!("{} and {}", print, self.print_neighbours_count())
+        // format!("{} and {}", print, self.print_neighbours_count())
+        format!("{}", print)
     }
 
     fn print_neighbours_count(&self) -> String {
@@ -154,7 +140,7 @@ mod cell_tests {
 
     #[test]
     fn should_be_alive_at_next_tick_when_alive() {
-        let cell = Cell::new_alive();
+        let mut cell = Cell::new_alive();
 
         cell.tick();
 
@@ -209,9 +195,10 @@ mod cell_tests {
             central.borrow_mut().add_neighbour(Rc::clone(&west), RelativePosition::West);
             central.borrow_mut().add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
 
-            let new_cell = central.borrow_mut().tick();
+            central.borrow_mut().pretick();
+            central.borrow_mut().tick();
 
-            assert_eq!(new_cell.is_alive(), false);
+            assert_eq!(central.borrow().is_alive(), false);
         }
 
         // Any live cell with two or three live neighbours lives on to the next generation.
@@ -235,9 +222,10 @@ mod cell_tests {
             central.add_neighbour(Rc::clone(&west), RelativePosition::West);
             central.add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
 
-            let new_cell = central.tick();
+            central.pretick();
+            central.tick();
 
-            assert_eq!(new_cell.is_alive(), true);
+            assert_eq!(central.is_alive(), true);
         }
 
         // Any live cell with more than three live neighbours dies, as if by overcrowding.
@@ -261,9 +249,10 @@ mod cell_tests {
             central.add_neighbour(Rc::clone(&west), RelativePosition::West);
             central.add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
 
-            let new_cell = central.tick();
+            central.pretick();
+            central.tick();
 
-            assert_eq!(new_cell.is_alive(), false);
+            assert_eq!(central.is_alive(), false);
         }
 
         // Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
@@ -287,9 +276,10 @@ mod cell_tests {
             central.add_neighbour(Rc::clone(&west), RelativePosition::West);
             central.add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
 
-            let new_cell = central.tick();
+            central.pretick();
+            central.tick();
 
-            assert_eq!(new_cell.is_alive(), true);
+            assert_eq!(central.is_alive(), true);
         }
     }
 }

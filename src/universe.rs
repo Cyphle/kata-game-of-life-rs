@@ -19,9 +19,20 @@ struct Universe {
     cells: Vec<Vec<CellPosition>>,
 }
 
+// TODO il va manquer un moyen de fournir des cellules de base
 impl Universe {
+    // TODO faut passer par des clones sinon le nouvel état de chaque cellule impact ses voisines alors que toutes les cellules doivent tick en même temps à partir de l'état n
     fn tick(&self) {
-        // TODO au tick il faut remplacer toutes les cellules et générer un nouvel univers
+        for c_x in &self.cells {
+            for c_y in c_x {
+                c_y.cell.borrow_mut().pretick();
+            }
+        }
+        for c_x in &self.cells {
+            for c_y in c_x {
+                c_y.cell.borrow_mut().tick();
+            }
+        }
     }
 
     fn print(&self) -> Vec<String> {
@@ -41,27 +52,8 @@ impl Universe {
     }
 
     fn new(width: usize, height: usize) -> Universe {
-        // TODO Ajouter les voisins.
-        /*
-        Si x = 0, alors on est sur la première ligne
-        Si x = universe.width - 1, alors on est sur la dernière ligne
-        Si y = 0, alors on est sur la première colonne
-        Si y = universe.height - 1, alors on est sur la derniere colonne
-
-        Algo possible pour limiter la complexité et rester en O(n) ou O(2n)
-        Pour n = 0 à x:
-            Pour m = 0 à y:
-                Crate Cell c à la position (x, y) avec un state aléatoire
-                Ajouter les voisins à c,
-                    Si x = 0, il n'y a pas de voisins à x - 1
-                    Si x = width - 1, il n'y a pas de voisin à x + 1
-                    Si y = 0, il n'y a pas de voisin à y - 1
-                    Si y = height - 1, il n'y a pas de voisin à y + 1
-                    En prenant en compte ces cas, il faut, pour x - 1 < p < x + 1 et y - 1 < q < y + 1, vérifier s'il y a quelqu'un et si oui ajouter
-                    Si y a quelqu'un, il faut aussi ajouter c à ce voisin
-         */
-
         let mut cells: Vec<Vec<CellPosition>> = vec![];
+        // TODO le width et height sont inverses
         for x in UNIVERSE_START_INDEX..width {
             let mut line = vec![];
 
@@ -72,7 +64,30 @@ impl Universe {
                     _ => Rc::new(RefCell::new(Cell::new_alive())),
                 };
 
-                Self::add_neighbours(width, height, &mut cells, x, y, &cell);
+                let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
+                for p in line_neighbours_start..=x + 1 {
+                    if p < width {
+                        let column_neighbours_start = if y > 0 { y - 1 } else { 0 };
+                        for q in column_neighbours_start..=y + 1 {
+                            if q < height {
+                                match cells.get(p) {
+                                    Some(current_line) => {
+                                        match current_line.get(q) {
+                                            Some(current_neighbour) => {
+                                                // TODO en fonction de x, y et p, q déterminer la position relative
+                                                cell.borrow_mut().add_neighbour(Rc::clone(&current_neighbour.cell), RelativePosition::North);
+                                                // TODO en fonction de x, y et p, q déterminer la position relative
+                                                current_neighbour.cell.borrow_mut().add_neighbour(Rc::clone(&&cell), RelativePosition::South);
+                                            }
+                                            _ => {}
+                                        }
+                                    }
+                                    _ => {}
+                                }
+                            }
+                        }
+                    }
+                }
 
                 line.push(CellPosition {
                     x,
@@ -88,33 +103,6 @@ impl Universe {
             width,
             height,
             cells,
-        }
-    }
-
-    fn add_neighbours(width: usize, height: usize, cells: &mut Vec<Vec<CellPosition>>, x: usize, y: usize, cell: &Rc<RefCell<Cell>>) {
-        let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
-        for p in line_neighbours_start..=x + 1 {
-            if p < width {
-                let column_neighbours_start = if y > 0 { y - 1 } else { 0 };
-                for q in column_neighbours_start..=y + 1 {
-                    if q < height {
-                        match cells.get(p) {
-                            Some(current_line) => {
-                                match current_line.get(q) {
-                                    Some(current_neighbour) => {
-                                        // TODO en fonction de x, y et p, q déterminer la position relative
-                                        cell.borrow_mut().add_neighbour(Rc::clone(&current_neighbour.cell), RelativePosition::North);
-                                        // TODO en fonction de x, y et p, q déterminer la position relative
-                                        current_neighbour.cell.borrow_mut().add_neighbour(Rc::clone(&cell), RelativePosition::South);
-                                    }
-                                    _ => {}
-                                }
-                            }
-                            _ => {}
-                        }
-                    }
-                }
-            }
         }
     }
 }
@@ -166,13 +154,28 @@ mod universe_tests {
     #[test]
     fn should_be_able_to_generate_a_linear_universe_of_two_cells_and_tick() {
         let universe = Universe::new(2, 1);
+        println!("Before tick");
         print_universe(&universe);
 
         universe.tick();
 
+        println!("After tick");
         print_universe(&universe);
         for line_to_print in universe.print_check() {
             assert_eq!(line_to_print, "x x");
+        }
+    }
+
+    #[test]
+    fn should_multiple_ticks() {
+        let universe = Universe::new(3, 3);
+        println!("Start");
+        print_universe(&universe);
+
+        let number_of_ticks = 10;
+        for x in 0..=number_of_ticks {
+            println!("Tick");
+            print_universe(&universe);
         }
     }
 
