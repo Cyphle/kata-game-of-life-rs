@@ -33,6 +33,7 @@ impl Cell {
             CellState::DEAD => { false }
         }
     }
+
     pub fn is_dead(&self) -> bool {
         !self.is_alive()
     }
@@ -101,12 +102,12 @@ impl Cell {
             true => { "x".to_string() }
             false => { "o".to_string() }
         };
-        // format!("{} and {}", print, self.print_neighbours_count())
-        format!("{}", print)
+        format!("{}{}", print, self.print_neighbours_count())
+        // format!("{}", print)
     }
 
     fn print_neighbours_count(&self) -> String {
-        return format!("I have {} neighbours", self.neighbours.len());
+        return format!("({}n)", self.neighbours.len());
     }
 
     fn count_live_neighbours(&self) -> usize {

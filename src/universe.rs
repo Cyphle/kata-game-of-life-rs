@@ -65,6 +65,7 @@ impl Universe {
                 };
 
                 // TODO Peut être que les voisins sont inverses aussi...
+                // TODO Le nombre de voisin n'est pas bon
                 Self::add_neighbours(width, height, &mut cells, x, y, &cell);
 
                 line.push(CellPosition {
@@ -177,9 +178,10 @@ mod universe_tests {
         println!("Start");
         print_universe(&universe);
 
-        let number_of_ticks = 10;
+        let number_of_ticks = 1;
         for x in 0..=number_of_ticks {
             println!("Tick");
+            universe.tick();
             print_universe(&universe);
         }
     }
