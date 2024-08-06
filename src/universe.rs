@@ -36,37 +36,45 @@ impl Universe {
     }
 
     fn print(&self) -> Vec<String> {
-        let to_print: Vec<String> = self
+        self
             .cells
             .iter()
-            .map(|x| x.iter().map(|y|
-                y.cell.borrow().print()).collect::<Vec<String>>().join(" ")
+            .map(|x| x
+                .iter()
+                .map(|y| y.cell.borrow().print())
+                .collect::<Vec<String>>()
+                .join(" ")
             )
-            .collect();
-        to_print
+            .collect()
     }
 
     fn print_check(&self) -> Vec<String> {
-        let to_print: Vec<String> = self.cells.iter().map(|_| "x".to_string()).collect();
-        vec![to_print.join(" ")]
+        self
+            .cells
+            .iter()
+            .map(|x| x
+                .iter()
+                .map(|y| String::from("x"))
+                .collect::<Vec<String>>()
+                .join(" ")
+            )
+            .collect()
     }
 
+    // TODO algo pour faire le parcours qu'une fois
     fn new(width: usize, height: usize) -> Universe {
         let mut cells: Vec<Vec<CellPosition>> = vec![];
-        // TODO le width et height sont inverses
-        for x in UNIVERSE_START_INDEX..width {
-            let mut line = vec![];
 
-            for y in UNIVERSE_START_INDEX..height {
-                let state = rand::thread_rng().gen_range(0..2);
-                let cell = match state {
-                    0 => Rc::new(RefCell::new(Cell::new_dead())),
-                    _ => Rc::new(RefCell::new(Cell::new_alive())),
-                };
+        for y in UNIVERSE_START_INDEX..height {
+            let mut line: Vec<CellPosition> = vec![];
+            for x in UNIVERSE_START_INDEX..width {
+                let cell = Rc::new(RefCell::new(Cell::new_random_state()));
 
                 // TODO Peut être que les voisins sont inverses aussi...
                 // TODO Le nombre de voisin n'est pas bon
-                Self::add_neighbours(width, height, &mut cells, x, y, &cell);
+                // TODO on ne regarde pas la ligne courante en train de se remplir en fait
+                // Si p == x, il faut regarder la ligne courante
+                Self::add_neighbours(width, height, &mut cells, y, &mut line, x, &cell);
 
                 line.push(CellPosition {
                     x,
@@ -85,23 +93,39 @@ impl Universe {
         }
     }
 
-    fn add_neighbours(width: usize, height: usize, cells: &mut Vec<Vec<CellPosition>>, x: usize, y: usize, cell: &Rc<RefCell<Cell>>) {
-        let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
-        for p in line_neighbours_start..=x + 1 {
-            if p < width {
-                let column_neighbours_start = if y > 0 { y - 1 } else { 0 };
-                for q in column_neighbours_start..=y + 1 {
-                    if q < height {
-                        match cells.get(p) {
+    // TODO Peut être que les voisins sont inverses aussi...
+    // TODO Le nombre de voisin n'est pas bon
+    // TODO on ne regarde pas la ligne courante en train de se remplir en fait
+    // Si p == x, il faut regarder la ligne courante
+    fn add_neighbours(width: usize, height: usize, cells: &mut Vec<Vec<CellPosition>>, y: usize, line: &mut Vec<CellPosition>, x: usize, cell: &Rc<RefCell<Cell>>) {
+        let column_neighbours_start = if y > 0 { y - 1 } else { 0 };
+        for q in column_neighbours_start..=y + 1 {
+            if q < height {
+                let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
+                for p in line_neighbours_start..=x + 1 {
+                    if p < width {
+                        match cells.get(q) {
                             Some(current_line) => {
-                                match current_line.get(q) {
-                                    Some(current_neighbour) => {
-                                        // TODO en fonction de x, y et p, q déterminer la position relative
-                                        cell.borrow_mut().add_neighbour(Rc::clone(&current_neighbour.cell), RelativePosition::North);
-                                        // TODO en fonction de x, y et p, q déterminer la position relative
-                                        current_neighbour.cell.borrow_mut().add_neighbour(Rc::clone(&&cell), RelativePosition::South);
+                                if p == x && q == y {
+                                    match line.get(p) {
+                                        Some(current_neighbour) => {
+                                            // TODO en fonction de x, y et p, q déterminer la position relative
+                                            cell.borrow_mut().add_neighbour(Rc::clone(&current_neighbour.cell), RelativePosition::North);
+                                            // TODO en fonction de x, y et p, q déterminer la position relative
+                                            current_neighbour.cell.borrow_mut().add_neighbour(Rc::clone(&&&cell), RelativePosition::South);
+                                        }
+                                        _ => {}
                                     }
-                                    _ => {}
+                                } else {
+                                    match current_line.get(p) {
+                                        Some(current_neighbour) => {
+                                            // TODO en fonction de x, y et p, q déterminer la position relative
+                                            cell.borrow_mut().add_neighbour(Rc::clone(&current_neighbour.cell), RelativePosition::North);
+                                            // TODO en fonction de x, y et p, q déterminer la position relative
+                                            current_neighbour.cell.borrow_mut().add_neighbour(Rc::clone(&&&cell), RelativePosition::South);
+                                        }
+                                        _ => {}
+                                    }
                                 }
                             }
                             _ => {}

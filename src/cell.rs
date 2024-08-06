@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use std::rc::Rc;
+use rand::Rng;
 
 #[derive(Debug, PartialEq)]
 pub enum CellState {
@@ -76,6 +77,18 @@ impl Cell {
     pub fn new(state: CellState) -> Cell {
         Cell {
             state,
+            next_state: CellState::ALIVE,
+            neighbours: vec![],
+        }
+    }
+
+    pub fn new_random_state() -> Cell {
+        let state = rand::thread_rng().gen_range(0..2);
+        Cell {
+            state: match state {
+                0 => CellState::DEAD,
+                _ => CellState::ALIVE,
+            },
             next_state: CellState::ALIVE,
             neighbours: vec![],
         }
