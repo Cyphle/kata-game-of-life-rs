@@ -54,7 +54,7 @@ impl Universe {
             .iter()
             .map(|x| x
                 .iter()
-                .map(|y| String::from("x"))
+                .map(|y| format!("x{}", y.cell.borrow().print_neighbours_count()))
                 .collect::<Vec<String>>()
                 .join(" ")
             )
@@ -172,7 +172,7 @@ mod universe_tests {
 
         print_universe(&universe);
         for line_to_print in universe.print_check() {
-            assert_eq!(line_to_print, "x");
+            assert_eq!(line_to_print, "x(1n)");
         }
     }
 
@@ -181,9 +181,9 @@ mod universe_tests {
         let universe = Universe::new(2, 2);
 
         print_universe(&universe);
-        for line_to_print in universe.print_check() {
-            assert_eq!(line_to_print, "x x");
-        }
+        let print_check = universe.print_check();
+        assert_eq!(print_check[0], "x(3n) x(3n)");
+        assert_eq!(print_check[1], "x(3n) x(3n)");
     }
 
     #[test]
@@ -194,6 +194,17 @@ mod universe_tests {
         for line_to_print in universe.print_check() {
             assert_eq!(line_to_print, "x x x");
         }
+    }
+
+    #[test]
+    fn should_be_able_to_generate_a_vertical_universe_of_three_cells_with_random_state() {
+        let universe = Universe::new(3, 1);
+
+        print_universe(&universe);
+        let print_check = universe.print_check();
+        assert_eq!(print_check[0], "x(1n)");
+        assert_eq!(print_check[1], "x(2n)");
+        assert_eq!(print_check[2], "x(1n)");
     }
 
     #[test]

@@ -119,7 +119,7 @@ impl Cell {
         // format!("{}", print)
     }
 
-    fn print_neighbours_count(&self) -> String {
+    pub fn print_neighbours_count(&self) -> String {
         return format!("({}n)", self.neighbours.len());
     }
 
