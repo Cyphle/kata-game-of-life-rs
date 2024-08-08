@@ -21,7 +21,6 @@ struct Universe {
 
 // TODO il va manquer un moyen de fournir des cellules de base
 impl Universe {
-    // TODO faut passer par des clones sinon le nouvel état de chaque cellule impact ses voisines alors que toutes les cellules doivent tick en même temps à partir de l'état n
     fn tick(&self) {
         for c_x in &self.cells {
             for c_y in c_x {
@@ -88,10 +87,6 @@ impl Universe {
         }
     }
 
-    // TODO Peut être que les voisins sont inverses aussi...
-    // TODO Le nombre de voisin n'est pas bon
-    // TODO on ne regarde pas la ligne courante en train de se remplir en fait
-    // Si p == x, il faut regarder la ligne courante
     fn add_neighbours(
         width: usize,
         height: usize,
@@ -99,16 +94,15 @@ impl Universe {
         line: &mut Vec<CellPosition>,
         current_cell_y_position: usize,
         current_cell_x_position: usize,
-        cell: &Rc<RefCell<Cell>>
+        cell: &Rc<RefCell<Cell>>,
     ) {
+        // TODO clean un peu
         let column_neighbours_start = if current_cell_y_position > 0 { current_cell_y_position - 1 } else { 0 };
         for q in column_neighbours_start..=current_cell_y_position + 1 {
             if q < height {
-
                 let line_neighbours_start = if current_cell_x_position > 0 { current_cell_x_position - 1 } else { 0 };
                 for p in line_neighbours_start..=current_cell_x_position + 1 {
                     if p < width {
-
                         if q == current_cell_y_position { // Si on est sur la ligne en train d'être remplie
                             match line.get(p) {
                                 Some(current_neighbour) => {
@@ -140,50 +134,6 @@ impl Universe {
                 }
             }
         }
-
-        /*
-        let column_neighbours_start = if y > 0 { y - 1 } else { 0 };
-        for q in column_neighbours_start..=y + 1 {
-            if q < height {
-                if q == y { // Si on est sur la ligne en train d'être remplie
-                    let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
-                    for p in line_neighbours_start..=x + 1 {
-                        if p < width {
-                            match line.get(p) {
-                                Some(current_neighbour) => {
-                                    // TODO en fonction de x, y et p, q déterminer la position relative
-                                    cell.borrow_mut().add_neighbour(Rc::clone(&current_neighbour.cell), RelativePosition::North);
-                                    // TODO en fonction de x, y et p, q déterminer la position relative
-                                    current_neighbour.cell.borrow_mut().add_neighbour(Rc::clone(&&&cell), RelativePosition::South);
-                                }
-                                _ => {}
-                            }
-                        }
-                    }
-                } else {
-                    match cells.get(q) {
-                        Some(current_line) => {
-                            let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
-                            for p in line_neighbours_start..=x + 1 {
-                                if p < width {
-                                    match current_line.get(p) {
-                                        Some(current_neighbour) => {
-                                            // TODO en fonction de x, y et p, q déterminer la position relative
-                                            cell.borrow_mut().add_neighbour(Rc::clone(&current_neighbour.cell), RelativePosition::North);
-                                            // TODO en fonction de x, y et p, q déterminer la position relative
-                                            current_neighbour.cell.borrow_mut().add_neighbour(Rc::clone(&&&cell), RelativePosition::South);
-                                        }
-                                        _ => {}
-                                    }
-                                }
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-            }
-        }
-         */
     }
 }
 
