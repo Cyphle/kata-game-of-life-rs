@@ -256,7 +256,7 @@ mod universe_tests {
     fn should_be_able_to_generate_a_square_universe_of_three_cells() {
         let universe = Universe::new(3, 3);
 
-        print_universe(&universe);
+        print_check_universe(&universe);
         for line_to_print in universe.print_check() {
             assert_eq!(line_to_print, "x x x");
         }
@@ -277,6 +277,7 @@ mod universe_tests {
         }
     }
 
+    // TODO le tick ne fonctionne pas
     #[test]
     fn should_multiple_ticks() {
         let universe = Universe::new(3, 3);
