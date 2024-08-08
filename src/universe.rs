@@ -54,14 +54,13 @@ impl Universe {
             .iter()
             .map(|x| x
                 .iter()
-                .map(|y| format!("x{}", y.cell.borrow().print_neighbours_count()))
+                .map(|y| format!("({}{})({}:{})", y.y, y.x, y.cell.borrow().print_neighbours_count(), y.cell.borrow().print_neighbours_positions()))
                 .collect::<Vec<String>>()
                 .join(" ")
             )
             .collect()
     }
 
-    // TODO algo pour faire le parcours qu'une fois
     fn new(width: usize, height: usize) -> Universe {
         let mut cells: Vec<Vec<CellPosition>> = vec![];
 
@@ -70,11 +69,7 @@ impl Universe {
             for x in UNIVERSE_START_INDEX..width {
                 let cell = Rc::new(RefCell::new(Cell::new_random_state()));
 
-                // TODO Peut être que les voisins sont inverses aussi...
-                // TODO Le nombre de voisin n'est pas bon
-                // TODO on ne regarde pas la ligne courante en train de se remplir en fait
-                // Si p == x, il faut regarder la ligne courante
-                Self::add_neighbours(width, height, &mut cells, y, &mut line, x, &cell);
+                Self::add_neighbours(width, height, &mut cells, &mut line, y, x, &cell);
 
                 line.push(CellPosition {
                     x,
@@ -97,7 +92,56 @@ impl Universe {
     // TODO Le nombre de voisin n'est pas bon
     // TODO on ne regarde pas la ligne courante en train de se remplir en fait
     // Si p == x, il faut regarder la ligne courante
-    fn add_neighbours(width: usize, height: usize, cells: &mut Vec<Vec<CellPosition>>, y: usize, line: &mut Vec<CellPosition>, x: usize, cell: &Rc<RefCell<Cell>>) {
+    fn add_neighbours(
+        width: usize,
+        height: usize,
+        cells: &mut Vec<Vec<CellPosition>>,
+        line: &mut Vec<CellPosition>,
+        current_cell_y_position: usize,
+        current_cell_x_position: usize,
+        cell: &Rc<RefCell<Cell>>
+    ) {
+        let column_neighbours_start = if current_cell_y_position > 0 { current_cell_y_position - 1 } else { 0 };
+        for q in column_neighbours_start..=current_cell_y_position + 1 {
+            if q < height {
+
+                let line_neighbours_start = if current_cell_x_position > 0 { current_cell_x_position - 1 } else { 0 };
+                for p in line_neighbours_start..=current_cell_x_position + 1 {
+                    if p < width {
+
+                        if q == current_cell_y_position { // Si on est sur la ligne en train d'être remplie
+                            match line.get(p) {
+                                Some(current_neighbour) => {
+                                    cell.borrow_mut().add_neighbour(Rc::clone(&current_neighbour.cell), RelativePosition::get_position_from(current_cell_x_position, current_cell_y_position, p, q));
+                                    current_neighbour.cell.borrow_mut().add_neighbour(Rc::clone(&&&cell), RelativePosition::get_position_from(p, q, current_cell_x_position, current_cell_y_position));
+                                }
+                                _ => {}
+                            }
+                        } else {
+                            match cells.get(q) {
+                                Some(current_line) => {
+                                    let line_neighbours_start = if current_cell_x_position > 0 { current_cell_x_position - 1 } else { 0 };
+                                    for p in line_neighbours_start..=current_cell_x_position + 1 {
+                                        if p < width {
+                                            match current_line.get(p) {
+                                                Some(current_neighbour) => {
+                                                    cell.borrow_mut().add_neighbour(Rc::clone(&current_neighbour.cell), RelativePosition::get_position_from(current_cell_x_position, current_cell_y_position, p, q));
+                                                    current_neighbour.cell.borrow_mut().add_neighbour(Rc::clone(&&&cell), RelativePosition::get_position_from(p, q, current_cell_x_position, current_cell_y_position));
+                                                }
+                                                _ => {}
+                                            }
+                                        }
+                                    }
+                                }
+                                _ => {}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /*
         let column_neighbours_start = if y > 0 { y - 1 } else { 0 };
         for q in column_neighbours_start..=y + 1 {
             if q < height {
@@ -139,6 +183,7 @@ impl Universe {
                 }
             }
         }
+         */
     }
 }
 
@@ -180,7 +225,7 @@ mod universe_tests {
     fn should_be_able_to_generate_a_square_universe_of_two_cells() {
         let universe = Universe::new(2, 2);
 
-        print_universe(&universe);
+        print_check_universe(&universe);
         let print_check = universe.print_check();
         assert_eq!(print_check[0], "x(3n) x(3n)");
         assert_eq!(print_check[1], "x(3n) x(3n)");
@@ -248,6 +293,12 @@ mod universe_tests {
 
     fn print_universe(universe: &Universe) {
         for line_to_print in universe.print() {
+            println!("{:?}", line_to_print);
+        }
+    }
+
+    fn print_check_universe(universe: &Universe) {
+        for line_to_print in universe.print_check() {
             println!("{:?}", line_to_print);
         }
     }
