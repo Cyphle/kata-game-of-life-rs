@@ -41,6 +41,7 @@ impl Universe {
             .map(|x| x
                 .iter()
                 .map(|y| y.cell.borrow().print())
+                // .map(|y| format!("{}({}{})({}:{})", y.cell.borrow().print(), y.y, y.x, y.cell.borrow().print_neighbours_count(), y.cell.borrow().print_neighbours_positions()))
                 .collect::<Vec<String>>()
                 .join(" ")
             )
@@ -227,14 +228,13 @@ mod universe_tests {
         }
     }
 
-    // TODO le tick ne fonctionne pas
     #[test]
     fn should_multiple_ticks() {
-        let universe = Universe::new(3, 3);
+        let universe = Universe::new(10, 10);
         println!("Start");
         print_universe(&universe);
 
-        let number_of_ticks = 1;
+        let number_of_ticks = 10;
         for x in 0..=number_of_ticks {
             println!("Tick");
             universe.tick();
