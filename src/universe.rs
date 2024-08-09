@@ -13,13 +13,12 @@ struct CellPosition {
 }
 
 #[derive(Debug, PartialEq)]
-struct Universe {
+pub struct Universe {
     width: usize,
     height: usize,
     cells: Vec<Vec<CellPosition>>,
 }
 
-// TODO il va manquer un moyen de fournir des cellules de base
 impl Universe {
 
     pub fn new(width: usize, height: usize) -> Universe {
