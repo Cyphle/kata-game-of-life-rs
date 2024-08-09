@@ -120,9 +120,12 @@ impl Cell {
         }
     }
 
-    pub fn new(state: CellState) -> Cell {
+    pub fn new(state: &CellState) -> Cell {
         Cell {
-            state,
+            state: match state {
+                CellState::ALIVE => CellState::ALIVE,
+                CellState::DEAD => CellState::DEAD
+            },
             next_state: CellState::ALIVE,
             neighbours: vec![],
         }

@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::cell::{Cell, RelativePosition};
+use crate::cell::{Cell, CellState, RelativePosition};
 use rand::Rng;
 
 static UNIVERSE_START_INDEX: usize = 0;
@@ -21,7 +21,54 @@ struct Universe {
 
 // TODO il va manquer un moyen de fournir des cellules de base
 impl Universe {
-    fn tick(&self) {
+
+    pub fn new(width: usize, height: usize) -> Universe {
+        let states = Self::generate_base_states(width, height);
+        Universe::new_with_defined_states(states)
+    }
+
+    pub fn new_with_defined_states(states: Vec<Vec<CellState>>) -> Universe {
+        let height = states.len();
+        let width = states[0].len();
+
+        let mut cells: Vec<Vec<CellPosition>> = vec![];
+
+        for y in UNIVERSE_START_INDEX..height {
+            let mut line: Vec<CellPosition> = vec![];
+            for x in UNIVERSE_START_INDEX..width {
+                let cell = match states.get(y) {
+                    Some(line_of_states) => {
+                        match line_of_states.get(x) {
+                            None => Cell::new_random_state(),
+                            Some(state) => Cell::new(state)
+                        }
+                    },
+                    _ => {
+                        Cell::new_random_state()
+                    }
+                };
+                let cell = Rc::new(RefCell::new(cell));
+
+                Self::add_neighbours(width, height, &mut cells, &mut line, y, x, &cell);
+
+                line.push(CellPosition {
+                    x,
+                    y,
+                    cell,
+                });
+            }
+
+            cells.push(line);
+        }
+
+        Universe {
+            width,
+            height,
+            cells,
+        }
+    }
+
+    pub fn tick(&self) {
         for c_x in &self.cells {
             for c_y in c_x {
                 c_y.cell.borrow_mut().pretick();
@@ -34,7 +81,7 @@ impl Universe {
         }
     }
 
-    fn print(&self) -> Vec<String> {
+    pub fn print(&self) -> Vec<String> {
         self
             .cells
             .iter()
@@ -61,31 +108,23 @@ impl Universe {
             .collect()
     }
 
-    fn new(width: usize, height: usize) -> Universe {
-        let mut cells: Vec<Vec<CellPosition>> = vec![];
+    fn generate_base_states(width: usize, height: usize) -> Vec<Vec<CellState>> {
+        let mut states: Vec<Vec<CellState>> = vec![];
 
-        for y in UNIVERSE_START_INDEX..height {
-            let mut line: Vec<CellPosition> = vec![];
-            for x in UNIVERSE_START_INDEX..width {
-                let cell = Rc::new(RefCell::new(Cell::new_random_state()));
-
-                Self::add_neighbours(width, height, &mut cells, &mut line, y, x, &cell);
-
-                line.push(CellPosition {
-                    x,
-                    y,
-                    cell,
-                });
+        for _ in 0..height {
+            let mut line_states: Vec<CellState> = vec![];
+            for _ in 0..width {
+                let rand = rand::thread_rng().gen_range(0..2);
+                let state = match rand {
+                    0 => CellState::DEAD,
+                    _ => CellState::ALIVE,
+                };
+                line_states.push(state);
             }
-
-            cells.push(line);
+            states.push(line_states);
         }
 
-        Universe {
-            width,
-            height,
-            cells,
-        }
+        states
     }
 
     fn add_neighbours(
