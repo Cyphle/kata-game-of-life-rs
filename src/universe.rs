@@ -20,7 +20,6 @@ pub struct Universe {
 }
 
 impl Universe {
-
     pub fn new(width: usize, height: usize) -> Universe {
         let states = Self::generate_base_states(width, height);
         Universe::new_with_defined_states(states)
