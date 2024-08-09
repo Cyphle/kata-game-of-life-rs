@@ -40,7 +40,7 @@ impl Universe {
                             None => Cell::new_random_state(),
                             Some(state) => Cell::new(state)
                         }
-                    },
+                    }
                     _ => {
                         Cell::new_random_state()
                     }
@@ -202,7 +202,7 @@ mod universe_tests {
 
         print_universe(&universe);
         for line_to_print in universe.print_check() {
-            assert_eq!(line_to_print, "x x");
+            assert_eq!(line_to_print, "(00)((1n):E) (01)((1n):W)");
         }
     }
 
@@ -211,9 +211,9 @@ mod universe_tests {
         let universe = Universe::new(1, 2);
 
         print_universe(&universe);
-        for line_to_print in universe.print_check() {
-            assert_eq!(line_to_print, "x(1n)");
-        }
+        let lines_to_print = universe.print_check();
+        assert_eq!(lines_to_print[0], "(00)((1n):S)");
+        assert_eq!(lines_to_print[1], "(10)((1n):N)");
     }
 
     #[test]
@@ -222,8 +222,8 @@ mod universe_tests {
 
         print_check_universe(&universe);
         let print_check = universe.print_check();
-        assert_eq!(print_check[0], "x(3n) x(3n)");
-        assert_eq!(print_check[1], "x(3n) x(3n)");
+        assert_eq!(print_check[0], "(00)((3n):E,S,SE) (01)((3n):W,SW,S)");
+        assert_eq!(print_check[1], "(10)((3n):N,NE,E) (11)((3n):NW,N,W)");
     }
 
     #[test]
@@ -232,7 +232,7 @@ mod universe_tests {
 
         print_universe(&universe);
         for line_to_print in universe.print_check() {
-            assert_eq!(line_to_print, "x x x");
+            assert_eq!(line_to_print, "(00)((1n):E) (01)((2n):W,E) (02)((1n):W)");
         }
     }
 
@@ -242,9 +242,7 @@ mod universe_tests {
 
         print_universe(&universe);
         let print_check = universe.print_check();
-        assert_eq!(print_check[0], "x(1n)");
-        assert_eq!(print_check[1], "x(2n)");
-        assert_eq!(print_check[2], "x(1n)");
+        assert_eq!(print_check[0], "(00)((1n):E) (01)((2n):W,E) (02)((1n):W)");
     }
 
     #[test]
@@ -252,9 +250,10 @@ mod universe_tests {
         let universe = Universe::new(3, 3);
 
         print_check_universe(&universe);
-        for line_to_print in universe.print_check() {
-            assert_eq!(line_to_print, "x x x");
-        }
+        let lines_to_print = universe.print_check();
+        assert_eq!(lines_to_print[0], "(00)((3n):E,S,SE) (01)((5n):W,E,SW,S,SE) (02)((3n):W,SW,S)");
+        assert_eq!(lines_to_print[1], "(10)((5n):N,NE,E,S,SE) (11)((8n):NW,N,NE,W,E,SW,S,SE) (12)((5n):NW,N,W,SW,S)");
+        assert_eq!(lines_to_print[2], "(20)((3n):N,NE,E) (21)((5n):NW,N,NE,W,E) (22)((3n):NW,N,W)");
     }
 
     #[test]
@@ -268,7 +267,7 @@ mod universe_tests {
         println!("After tick");
         print_universe(&universe);
         for line_to_print in universe.print_check() {
-            assert_eq!(line_to_print, "x x");
+            assert_eq!(line_to_print, "(00)((1n):E) (01)((1n):W)");
         }
     }
 
