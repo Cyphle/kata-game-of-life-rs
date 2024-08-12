@@ -1,7 +1,9 @@
 use std::{thread, time};
+use crate::smartpointers::universe;
 
-mod universe;
-mod cell;
+mod lifetime;
+mod common;
+mod smartpointers;
 
 fn print_universe(universe: &universe::Universe) {
     for line_to_print in universe.print() {

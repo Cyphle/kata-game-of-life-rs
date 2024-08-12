@@ -1,7 +1,11 @@
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::cell::{Cell, CellState, RelativePosition};
+
 use rand::Rng;
+
+use crate::common::cell_state::CellState;
+use crate::common::relative_position::RelativePosition;
+use crate::smartpointers::cell::Cell;
 
 static UNIVERSE_START_INDEX: usize = 0;
 
@@ -184,7 +188,7 @@ impl Universe {
 
 #[cfg(test)]
 mod universe_tests {
-    use crate::universe::Universe;
+    use crate::smartpointers::universe::Universe;
 
     #[test]
     fn should_be_able_to_generate_a_monocellular_universe() {

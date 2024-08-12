@@ -1,13 +1,13 @@
-use std::rc::Rc;
-use crate::cell_rc::{CellState, RelativePosition};
+use crate::common::cell_state::CellState;
+use crate::common::relative_position::RelativePosition;
 
 #[derive(Debug)]
-pub struct CellLifetime<'a> {
+pub struct Cell<'a> {
     state: CellState,
-    neighbours: Vec<(&'a CellLifetime<'a>, RelativePosition)>, // TODO faut peut être mieux passer à un Rc en fait. A essayer
+    neighbours: Vec<(&'a Cell<'a>, RelativePosition)>,
 }
 
-impl<'a> CellLifetime<'a> {
+impl<'a> Cell<'a> {
     pub fn is_alive(&self) -> bool {
         return match self.state {
             CellState::ALIVE => { true }
@@ -26,21 +26,21 @@ impl<'a> CellLifetime<'a> {
         println!("Res in cell {:?}", res);
     }
 
-    pub fn new(state: CellState) -> CellLifetime<'a> {
+    pub fn new(state: CellState) -> Cell<'a> {
         Cell {
             state,
             neighbours: vec![],
         }
     }
 
-    pub fn new_alive() -> CellLifetime<'a> {
+    pub fn new_alive() -> Cell<'a> {
         Cell {
             state: CellState::ALIVE,
             neighbours: vec![],
         }
     }
 
-    pub fn new_dead() -> CellLifetime<'a> {
+    pub fn new_dead() -> Cell<'a> {
         Cell {
             state: CellState::DEAD,
             neighbours: vec![],
@@ -55,6 +55,7 @@ impl<'a> CellLifetime<'a> {
 #[cfg(test)]
 mod cell_tests {
     use crate::cell_rc::{CellState, RelativePosition};
+
     use super::*;
 
     #[test]
@@ -72,17 +73,17 @@ mod cell_tests {
         let neighbour_one = Cell::new_alive();
         let neighbour_two = Cell::new_alive();
 
-        cell.add_neighbour(&neighbour_one, RelativePosition::EAST);
-        cell.add_neighbour(&neighbour_one, RelativePosition::EAST);
+        cell.add_neighbour(&neighbour_one, RelativePosition::East);
+        cell.add_neighbour(&neighbour_one, RelativePosition::East);
 
         let east_neighbours: usize = cell
             .neighbours
             .into_iter()
             .filter(|(neighbour, position)| match position {
-                RelativePosition::NORTH |
-                RelativePosition::WEST |
-                RelativePosition::SOUTH => { false }
-                RelativePosition::EAST => { true }
+                RelativePosition::North |
+                RelativePosition::West |
+                RelativePosition::South => { false }
+                RelativePosition::East => { true }
             })
             .map(|(cell, position)| cell)
             .count();
@@ -97,10 +98,10 @@ mod cell_tests {
             CellState::ALIVE,
             CellState::ALIVE,
         );
-        central.add_neighbour(&north, RelativePosition::NORTH);
-        central.add_neighbour(&east, RelativePosition::EAST);
-        central.add_neighbour(&south, RelativePosition::SOUTH);
-        central.add_neighbour(&east, RelativePosition::WEST);
+        central.add_neighbour(&north, RelativePosition::North);
+        central.add_neighbour(&east, RelativePosition::East);
+        central.add_neighbour(&south, RelativePosition::South);
+        central.add_neighbour(&east, RelativePosition::West);
 
         central.tick();
 
@@ -112,7 +113,7 @@ mod cell_tests {
         eastState: CellState,
         southState: CellState,
         westState: CellState,
-    ) -> (CellLifetime<'a>, CellLifetime<'a>, CellLifetime<'a>, CellLifetime<'a>, CellLifetime<'a>) {
+    ) -> (Cell<'a>, Cell<'a>, Cell<'a>, Cell<'a>, Cell<'a>) {
         let north = Cell::new(northState);
         let east = Cell::new(eastState);
         let south = Cell::new(southState);
