@@ -21,9 +21,19 @@ impl<'a> Cell<'a> {
         }
     }
 
-    pub fn tick(&self) {
-        let res: Vec<bool> = self.neighbours.iter().map(|(cell, position)| cell.is_alive()).collect();
-        println!("Res in cell {:?}", res);
+    pub fn tick(&self) -> CellState {
+        let number_of_live_neighbours = self.count_live_neighbours();
+        match number_of_live_neighbours {
+            n if n < 2 || n > 3 => {
+                CellState::DEAD
+            }
+            _ => {
+                match self.state {
+                    CellState::ALIVE => CellState::ALIVE,
+                    CellState::DEAD => CellState::DEAD,
+                }
+            }
+        }
     }
 
     pub fn new(state: CellState) -> Cell<'a> {
@@ -45,6 +55,15 @@ impl<'a> Cell<'a> {
             state: CellState::DEAD,
             neighbours: vec![],
         }
+    }
+
+    fn count_live_neighbours(&self) -> usize {
+        self
+            .neighbours
+            .iter()
+            .map(|(cell, _)| cell.is_alive())
+            .filter(|x| *x == true)
+            .count()
     }
 
     fn has_neighbour_at_position(&self, requested_position: &RelativePosition) -> bool {
@@ -88,6 +107,33 @@ mod cell_tests {
     }
 
     mod game_rules {
+        use crate::common::relative_position::RelativePosition;
+        use crate::lifetime::cell::Cell;
 
+        // Any live cell with fewer than two live neighbours dies, as if caused by under-population.
+        #[test]
+        fn should_be_dead_when_have_one_neighbour_alive_at_next_tick() {
+            let north = Cell::new_alive();
+            let north_est = Cell::new_dead();
+            let east = Cell::new_dead();
+            let south_east = Cell::new_dead();
+            let south = Cell::new_dead();
+            let south_west = Cell::new_dead();
+            let west = Cell::new_dead();
+            let north_west = Cell::new_dead();
+            let mut central = Cell::new_alive();
+            central.add_neighbour(&north, RelativePosition::North);
+            central.add_neighbour(&north_est, RelativePosition::NorthEast);
+            central.add_neighbour(&east, RelativePosition::East);
+            central.add_neighbour(&south_east, RelativePosition::SouthEast);
+            central.add_neighbour(&south, RelativePosition::South);
+            central.add_neighbour(&south_west, RelativePosition::SouthWest);
+            central.add_neighbour(&west, RelativePosition::West);
+            central.add_neighbour(&north_west, RelativePosition::NorthWest);
+
+            let new_state = central.tick();
+
+            assert_eq!(new_state.is_alive(), false);
+        }
     }
 }
