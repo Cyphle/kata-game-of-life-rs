@@ -1,3 +1,4 @@
+use rand::Rng;
 use crate::common::cell_state::CellState;
 use crate::common::relative_position::RelativePosition;
 
@@ -59,10 +60,21 @@ impl<'a> Cell<'a> {
             .join(",")
     }
 
-    pub fn new(state: CellState) -> Cell<'a> {
+    pub fn new(state: &CellState) -> Cell<'a> {
         Cell {
-            state,
+            state: match state {
+                CellState::ALIVE => CellState::ALIVE,
+                CellState::DEAD => CellState::DEAD
+            },
             neighbours: vec![],
+        }
+    }
+
+    pub fn new_random_state() -> Cell<'a> {
+        let state = rand::thread_rng().gen_range(0..2);
+        match state {
+            0 => Cell::new_dead(),
+            _ => Cell::new_alive()
         }
     }
 
@@ -131,7 +143,7 @@ mod cell_tests {
     mod game_rules {
         use crate::common::cell_state::CellState;
         use crate::common::relative_position::RelativePosition;
-        use crate::lifetime::cell::Cell;
+        use crate::lifetime_mut::cell::Cell;
 
         // Any live cell with fewer than two live neighbours dies, as if caused by under-population.
         #[test]
