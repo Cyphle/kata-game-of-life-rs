@@ -72,7 +72,45 @@ impl<'a> Universe<'a> {
                     }
                 };
 
-                Self::add_neighbours(width, height, &mut cells, &mut line, y, x, &mut cell);
+                let column_neighbours_start = if y > 0 { y - 1 } else { 0 };
+                for q in column_neighbours_start..=y + 1 {
+                    if q < height {
+                        let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
+                        for p in line_neighbours_start..=x + 1 {
+                            if p < width {
+                                if q == y { // Si on est sur la ligne en train d'être remplie
+                                    let mut cell1 = &&mut cell;
+                                    match line.get_mut(p) {
+                                        Some(current_neighbour) => {
+                                            cell1.add_neighbour(&current_neighbour.cell, RelativePosition::get_position_from(x, y, p, q));
+                                            current_neighbour.cell.add_neighbour(cell1, RelativePosition::get_position_from(p, q, x, y));
+                                        }
+                                        _ => {}
+                                    }
+                                } else {
+                                    let mut cell1 = &&mut cell;
+                                    match cells.get_mut(q) {
+                                        Some(current_line) => {
+                                            let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
+                                            for p in line_neighbours_start..=x + 1 {
+                                                if p < width {
+                                                    match current_line.get_mut(p) {
+                                                        Some(current_neighbour) => {
+                                                            cell1.add_neighbour(&current_neighbour.cell, RelativePosition::get_position_from(x, y, p, q));
+                                                            current_neighbour.cell.add_neighbour(cell1, RelativePosition::get_position_from(p, q, x, y));
+                                                        }
+                                                        _ => {}
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        _ => {}
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
 
                 line.push(CellPosition {
                     x,
@@ -88,62 +126,6 @@ impl<'a> Universe<'a> {
             width,
             height,
             cells,
-        }
-    }
-
-    fn add_neighbours(
-        width: usize,
-        height: usize,
-        cells: &mut Vec<Vec<CellPosition>>,
-        line: &mut Vec<CellPosition>,
-        current_cell_y_position: usize,
-        current_cell_x_position: usize,
-        cell: &'a Cell,
-    ) {
-        let column_neighbours_start = if current_cell_y_position > 0 { current_cell_y_position - 1 } else { 0 };
-        for q in column_neighbours_start..=current_cell_y_position + 1 {
-            if q < height {
-                let line_neighbours_start = if current_cell_x_position > 0 { current_cell_x_position - 1 } else { 0 };
-                for p in line_neighbours_start..=current_cell_x_position + 1 {
-                    if p < width {
-                        if q == current_cell_y_position { // Si on est sur la ligne en train d'être remplie
-                            Self::add_neighbours_for_current_line(line, current_cell_y_position, current_cell_x_position, &cell, q, p);
-                        } else {
-                            Self::add_neighbours_for_existing_lines(width, cells, current_cell_y_position, current_cell_x_position, &cell, q);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    fn add_neighbours_for_existing_lines(width: usize, cells: &mut Vec<Vec<CellPosition>>, current_cell_y_position: usize, current_cell_x_position: usize, mut cell: &'a Cell, q: usize) {
-        match cells.get_mut(q) {
-            Some(current_line) => {
-                let line_neighbours_start = if current_cell_x_position > 0 { current_cell_x_position - 1 } else { 0 };
-                for p in line_neighbours_start..=current_cell_x_position + 1 {
-                    if p < width {
-                        match current_line.get_mut(p) {
-                            Some(current_neighbour) => {
-                                cell.add_neighbour(&current_neighbour.cell, RelativePosition::get_position_from(current_cell_x_position, current_cell_y_position, p, q));
-                                current_neighbour.cell.add_neighbour(cell, RelativePosition::get_position_from(p, q, current_cell_x_position, current_cell_y_position));
-                            }
-                            _ => {}
-                        }
-                    }
-                }
-            }
-            _ => {}
-        }
-    }
-
-    fn add_neighbours_for_current_line(line: &mut Vec<CellPosition>, current_cell_y_position: usize, current_cell_x_position: usize, mut cell: &'a Cell, q: usize, p: usize) {
-        match line.get_mut(p) {
-            Some(current_neighbour) => {
-                cell.add_neighbour(&current_neighbour.cell, RelativePosition::get_position_from(current_cell_x_position, current_cell_y_position, p, q));
-                current_neighbour.cell.add_neighbour(cell, RelativePosition::get_position_from(p, q, current_cell_x_position, current_cell_y_position));
-            }
-            _ => {}
         }
     }
 
