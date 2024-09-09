@@ -39,6 +39,26 @@ impl<'a> Cell<'a> {
         }
     }
 
+    pub fn print(&self) -> String {
+        let print = match self.is_alive() {
+            true => { "x".to_string() }
+            false => { "o".to_string() }
+        };
+        format!("{}", print)
+    }
+
+    pub fn print_neighbours_count(&self) -> String {
+        return format!("({}n)", self.neighbours.len());
+    }
+
+    pub fn print_neighbours_positions(&self) -> String {
+        self.neighbours
+            .iter()
+            .map(|(cell, position)| position.print())
+            .collect::<Vec<String>>()
+            .join(",")
+    }
+
     pub fn new(state: CellState) -> Cell<'a> {
         Cell {
             state,
