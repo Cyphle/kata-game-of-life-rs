@@ -16,7 +16,7 @@ impl<'a> Cell<'a> {
     }
 
     pub fn add_neighbour(&mut self, neighbour: &'a Cell, position: RelativePosition) {
-        if (!self.has_neighbour_at_position(&position)) {
+        if !self.has_neighbour_at_position(&position) {
             self.neighbours.push((neighbour, position));
         }
     }
@@ -26,6 +26,9 @@ impl<'a> Cell<'a> {
         match number_of_live_neighbours {
             n if n < 2 || n > 3 => {
                 CellState::DEAD
+            }
+            3 => {
+                CellState::ALIVE
             }
             _ => {
                 match self.state {
@@ -162,5 +165,56 @@ mod cell_tests {
             assert_eq!(next_state, CellState::ALIVE);
         }
 
+        // Any live cell with more than three live neighbours dies, as if by overcrowding.
+        #[test]
+        fn should_be_dead_when_more_then_three_neighbours_alive_at_next_tick() {
+            let north = Cell::new_alive();
+            let north_est = Cell::new_alive();
+            let east = Cell::new_alive();
+            let south_east = Cell::new_alive();
+            let south = Cell::new_dead();
+            let south_west = Cell::new_dead();
+            let west = Cell::new_dead();
+            let north_west = Cell::new_dead();
+            let mut central = Cell::new_alive();
+            central.add_neighbour(&north, RelativePosition::North);
+            central.add_neighbour(&north_est, RelativePosition::NorthEast);
+            central.add_neighbour(&east, RelativePosition::East);
+            central.add_neighbour(&south_east, RelativePosition::SouthEast);
+            central.add_neighbour(&south, RelativePosition::South);
+            central.add_neighbour(&south_west, RelativePosition::SouthWest);
+            central.add_neighbour(&west, RelativePosition::West);
+            central.add_neighbour(&north_west, RelativePosition::NorthWest);
+
+            let next_state = central.tick();
+
+            assert_eq!(next_state, CellState::DEAD);
+        }
+
+        // Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+        #[test]
+        fn should_be_alive_when_three_live_neighbours_alive_at_next_tick() {
+            let north = Cell::new_alive();
+            let north_est = Cell::new_alive();
+            let east = Cell::new_alive();
+            let south_east = Cell::new_dead();
+            let south = Cell::new_dead();
+            let south_west = Cell::new_dead();
+            let west = Cell::new_dead();
+            let north_west = Cell::new_dead();
+            let mut central = Cell::new_dead();
+            central.add_neighbour(&north, RelativePosition::North);
+            central.add_neighbour(&north_est, RelativePosition::NorthEast);
+            central.add_neighbour(&east, RelativePosition::East);
+            central.add_neighbour(&south_east, RelativePosition::SouthEast);
+            central.add_neighbour(&south, RelativePosition::South);
+            central.add_neighbour(&south_west, RelativePosition::SouthWest);
+            central.add_neighbour(&west, RelativePosition::West);
+            central.add_neighbour(&north_west, RelativePosition::NorthWest);
+
+            let next_state = central.tick();
+
+            assert_eq!(next_state, CellState::ALIVE);
+        }
     }
 }
