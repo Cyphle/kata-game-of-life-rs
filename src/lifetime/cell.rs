@@ -73,7 +73,6 @@ impl<'a> Cell<'a> {
 
 #[cfg(test)]
 mod cell_tests {
-
     use super::*;
 
     #[test]
@@ -107,6 +106,7 @@ mod cell_tests {
     }
 
     mod game_rules {
+        use crate::common::cell_state::CellState;
         use crate::common::relative_position::RelativePosition;
         use crate::lifetime::cell::Cell;
 
@@ -133,7 +133,34 @@ mod cell_tests {
 
             let new_state = central.tick();
 
-            assert_eq!(new_state.is_alive(), false);
+            assert_eq!(new_state, CellState::DEAD);
         }
+
+        // Any live cell with two or three live neighbours lives on to the next generation.
+        #[test]
+        fn should_be_alive_when_have_two_or_three_neighbours_alive_at_next_tick() {
+            let north = Cell::new_alive();
+            let north_est = Cell::new_alive();
+            let east = Cell::new_alive();
+            let south_east = Cell::new_dead();
+            let south = Cell::new_dead();
+            let south_west = Cell::new_dead();
+            let west = Cell::new_dead();
+            let north_west = Cell::new_dead();
+            let mut central = Cell::new_alive();
+            central.add_neighbour(&north, RelativePosition::North);
+            central.add_neighbour(&north_est, RelativePosition::NorthEast);
+            central.add_neighbour(&east, RelativePosition::East);
+            central.add_neighbour(&south_east, RelativePosition::SouthEast);
+            central.add_neighbour(&south, RelativePosition::South);
+            central.add_neighbour(&south_west, RelativePosition::SouthWest);
+            central.add_neighbour(&west, RelativePosition::West);
+            central.add_neighbour(&north_west, RelativePosition::NorthWest);
+
+            let next_state = central.tick();
+
+            assert_eq!(next_state, CellState::ALIVE);
+        }
+
     }
 }
