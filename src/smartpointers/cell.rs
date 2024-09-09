@@ -179,8 +179,8 @@ mod cell_tests {
     mod game_rules {
         use std::cell::RefCell;
         use std::rc::Rc;
-
-        use crate::cell::{Cell, RelativePosition};
+        use crate::common::relative_position::RelativePosition;
+        use crate::smartpointers::cell::Cell;
 
         // Any live cell with fewer than two live neighbours dies, as if caused by under-population.
         #[test]

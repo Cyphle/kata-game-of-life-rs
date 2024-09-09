@@ -54,7 +54,6 @@ impl<'a> Cell<'a> {
 
 #[cfg(test)]
 mod cell_tests {
-    use crate::cell_rc::{CellState, RelativePosition};
 
     use super::*;
 
@@ -80,46 +79,15 @@ mod cell_tests {
             .neighbours
             .into_iter()
             .filter(|(neighbour, position)| match position {
-                RelativePosition::North |
-                RelativePosition::West |
-                RelativePosition::South => { false }
                 RelativePosition::East => { true }
+                _ => { false }
             })
             .map(|(cell, position)| cell)
             .count();
         assert_eq!(east_neighbours, 1);
     }
 
-    #[test]
-    fn should_be_alive_when_have_one_neighbour_alive_at_next_tick() {
-        let (mut central, north, east, south, west) = generate_cell_with_neighbours(
-            CellState::ALIVE,
-            CellState::ALIVE,
-            CellState::ALIVE,
-            CellState::ALIVE,
-        );
-        central.add_neighbour(&north, RelativePosition::North);
-        central.add_neighbour(&east, RelativePosition::East);
-        central.add_neighbour(&south, RelativePosition::South);
-        central.add_neighbour(&east, RelativePosition::West);
+    mod game_rules {
 
-        central.tick();
-
-        assert_eq!(central.is_alive(), true);
-    }
-
-    fn generate_cell_with_neighbours<'a>(
-        northState: CellState,
-        eastState: CellState,
-        southState: CellState,
-        westState: CellState,
-    ) -> (Cell<'a>, Cell<'a>, Cell<'a>, Cell<'a>, Cell<'a>) {
-        let north = Cell::new(northState);
-        let east = Cell::new(eastState);
-        let south = Cell::new(southState);
-        let west = Cell::new(westState);
-        let mut central = Cell::new_alive();
-
-        (central, north, east, south, west)
     }
 }
