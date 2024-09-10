@@ -16,7 +16,7 @@ static UNIVERSE_START_INDEX: usize = 0;
 struct CellPosition<'a> {
     x: usize,
     y: usize,
-    cell: &'a Cell<'a>,
+    cell: Cell<'a>,
 }
 
 #[derive(Debug)]
@@ -72,50 +72,10 @@ impl<'a> Universe<'a> {
                     }
                 };
 
-                // let column_neighbours_start = if y > 0 { y - 1 } else { 0 };
-                // for q in column_neighbours_start..=y + 1 {
-                //     if q < height {
-                //         let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
-                //         for p in line_neighbours_start..=x + 1 {
-                //             if p < width {
-                //                 if q == y { // Si on est sur la ligne en train d'être remplie
-                //                     let mut cell1 = &&mut cell;
-                //                     match line.get_mut(p) {
-                //                         Some(current_neighbour) => {
-                //                             cell1.add_neighbour(&current_neighbour.cell, RelativePosition::get_position_from(x, y, p, q));
-                //                             current_neighbour.cell.add_neighbour(cell1, RelativePosition::get_position_from(p, q, x, y));
-                //                         }
-                //                         _ => {}
-                //                     }
-                //                 } else {
-                //                     let mut cell1 = &&mut cell;
-                //                     match cells.get_mut(q) {
-                //                         Some(current_line) => {
-                //                             let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
-                //                             for p in line_neighbours_start..=x + 1 {
-                //                                 if p < width {
-                //                                     match current_line.get_mut(p) {
-                //                                         Some(current_neighbour) => {
-                //                                             cell1.add_neighbour(&current_neighbour.cell, RelativePosition::get_position_from(x, y, p, q));
-                //                                             current_neighbour.cell.add_neighbour(cell1, RelativePosition::get_position_from(p, q, x, y));
-                //                                         }
-                //                                         _ => {}
-                //                                     }
-                //                                 }
-                //                             }
-                //                         }
-                //                         _ => {}
-                //                     }
-                //                 }
-                //             }
-                //         }
-                //     }
-                // }
-
                 line.push(CellPosition {
                     x,
                     y,
-                    cell: &cell,
+                    cell,
                 });
             }
 
