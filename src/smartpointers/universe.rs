@@ -164,7 +164,7 @@ impl Universe {
                         match current_line.get(p) {
                             Some(current_neighbour) => {
                                 cell.borrow_mut().add_neighbour(Rc::clone(&current_neighbour.cell), RelativePosition::get_position_from(current_cell_x_position, current_cell_y_position, p, q));
-                                current_neighbour.cell.borrow_mut().add_neighbour(Rc::clone(&&&cell), RelativePosition::get_position_from(p, q, current_cell_x_position, current_cell_y_position));
+                                current_neighbour.cell.borrow_mut().add_neighbour(Rc::clone(&cell), RelativePosition::get_position_from(p, q, current_cell_x_position, current_cell_y_position));
                             }
                             _ => {}
                         }
@@ -179,7 +179,7 @@ impl Universe {
         match line.get(p) {
             Some(current_neighbour) => {
                 cell.borrow_mut().add_neighbour(Rc::clone(&current_neighbour.cell), RelativePosition::get_position_from(current_cell_x_position, current_cell_y_position, p, q));
-                current_neighbour.cell.borrow_mut().add_neighbour(Rc::clone(&&&cell), RelativePosition::get_position_from(p, q, current_cell_x_position, current_cell_y_position));
+                current_neighbour.cell.borrow_mut().add_neighbour(Rc::clone(&cell), RelativePosition::get_position_from(p, q, current_cell_x_position, current_cell_y_position));
             }
             _ => {}
         }

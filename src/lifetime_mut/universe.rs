@@ -73,8 +73,6 @@ impl<'a> Universe<'a> {
                     }
                 };
 
-                Self::add_neighbours(width, height, &mut cells, &mut line, y, x, &cell);
-
                 line.push(CellPosition {
                     x,
                     y,
@@ -92,60 +90,8 @@ impl<'a> Universe<'a> {
         }
     }
 
-    fn add_neighbours(
-        width: usize,
-        height: usize,
-        cells: &mut Vec<Vec<CellPosition>>,
-        line: &mut Vec<CellPosition>,
-        current_cell_y_position: usize,
-        current_cell_x_position: usize,
-        cell: &Rc<RefCell<crate::smartpointers::cell::Cell>>,
-    ) {
-        let column_neighbours_start = if current_cell_y_position > 0 { current_cell_y_position - 1 } else { 0 };
-        for q in column_neighbours_start..=current_cell_y_position + 1 {
-            if q < height {
-                let line_neighbours_start = if current_cell_x_position > 0 { current_cell_x_position - 1 } else { 0 };
-                for p in line_neighbours_start..=current_cell_x_position + 1 {
-                    if p < width {
-                        if q == current_cell_y_position { // Si on est sur la ligne en train d'être remplie
-                            Self::add_neighbours_for_current_line(line, current_cell_y_position, current_cell_x_position, &cell, q, p);
-                        } else {
-                            Self::add_neighbours_for_existing_lines(width, cells, current_cell_y_position, current_cell_x_position, &cell, q);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    fn add_neighbours_for_existing_lines(width: usize, cells: &mut Vec<Vec<CellPosition>>, current_cell_y_position: usize, current_cell_x_position: usize, cell: &&Rc<RefCell<crate::smartpointers::cell::Cell>>, q: usize) {
-        match cells.get(q) {
-            Some(current_line) => {
-                let line_neighbours_start = if current_cell_x_position > 0 { current_cell_x_position - 1 } else { 0 };
-                for p in line_neighbours_start..=current_cell_x_position + 1 {
-                    if p < width {
-                        match current_line.get(p) {
-                            Some(current_neighbour) => {
-                                cell.borrow_mut().add_neighbour(Rc::clone(&current_neighbour.cell), RelativePosition::get_position_from(current_cell_x_position, current_cell_y_position, p, q));
-                                current_neighbour.cell.borrow_mut().add_neighbour(Rc::clone(&&&cell), RelativePosition::get_position_from(p, q, current_cell_x_position, current_cell_y_position));
-                            }
-                            _ => {}
-                        }
-                    }
-                }
-            }
-            _ => {}
-        }
-    }
-
-    fn add_neighbours_for_current_line(line: &mut Vec<CellPosition>, current_cell_y_position: usize, current_cell_x_position: usize, cell: &&Rc<RefCell<crate::smartpointers::cell::Cell>>, q: usize, p: usize) {
-        match line.get(p) {
-            Some(current_neighbour) => {
-                cell.borrow_mut().add_neighbour(Rc::clone(&current_neighbour.cell), RelativePosition::get_position_from(current_cell_x_position, current_cell_y_position, p, q));
-                current_neighbour.cell.borrow_mut().add_neighbour(Rc::clone(&&&cell), RelativePosition::get_position_from(p, q, current_cell_x_position, current_cell_y_position));
-            }
-            _ => {}
-        }
+    fn print_neighbours_count_of(x: usize, y: usize) -> usize {
+        // TODO il faut regarder si y a des voisins tout autour
     }
 
     pub fn print(&self) -> Vec<String> {
@@ -168,7 +114,7 @@ impl<'a> Universe<'a> {
             .iter()
             .map(|x| x
                 .iter()
-                .map(|y| format!("({}{})({}:{})", y.y, y.x, y.cell.print_neighbours_count(), y.cell.print_neighbours_positions()))
+                .map(|y| format!("({}{})({}:{})", y.y, y.x, self.print_neighbours_count_of(x, y), "y.cell.print_neighbours_positions()"))
                 .collect::<Vec<String>>()
                 .join(" ")
             )
