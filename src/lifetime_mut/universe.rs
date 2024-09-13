@@ -14,21 +14,21 @@ use crate::lifetime_mut::cell::Cell;
 static UNIVERSE_START_INDEX: usize = 0;
 
 #[derive(Debug)]
-struct CellPosition<'a> {
+struct CellPosition {
     x: usize,
     y: usize,
-    cell: Cell<'a>,
+    cell: Cell,
 }
 
 #[derive(Debug)]
-pub struct Universe<'a> {
+pub struct Universe {
     width: usize,
     height: usize,
-    cells: Vec<Vec<CellPosition<'a>>>,
+    cells: Vec<Vec<CellPosition>>,
 }
 
-impl<'a> Universe<'a> {
-    pub fn new(width: usize, height: usize) -> Universe<'a> {
+impl Universe {
+    pub fn new(width: usize, height: usize) -> Universe {
         let states = Self::generate_base_states(width, height);
         Universe::new_with_defined_states(states)
     }
@@ -52,7 +52,7 @@ impl<'a> Universe<'a> {
         states
     }
 
-    pub fn new_with_defined_states(states: Vec<Vec<CellState>>) -> Universe<'a> {
+    pub fn new_with_defined_states(states: Vec<Vec<CellState>>) -> Universe {
         let height = states.len();
         let width = states[0].len();
 
@@ -90,8 +90,37 @@ impl<'a> Universe<'a> {
         }
     }
 
-    fn print_neighbours_count_of(x: usize, y: usize) -> usize {
+    fn count_neighbours_of(&self, x: usize, y: usize) -> usize {
         // TODO il faut regarder si y a des voisins tout autour
+        /*
+        Pour rappel: vec[][] => vec[column][line] => vec[0] == line 1
+         */
+        let mut count = 0;
+
+        // TODO il faut filtrer si les indexes sont égaux à x et y
+        let column_neighbours_start = if y > 0 { y - 1 } else { 0 };
+        let column_neighbours_end = if y + 1 < self.height { y + 1 } else { self.height - 1 };
+        for column_index in column_neighbours_start..=column_neighbours_end {
+            let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
+            let line_neighbours_end = if x + 1 < self.width { x + 1 } else { self.width - 1 };
+            for line_index in line_neighbours_start..=line_neighbours_end {
+                match self.cells.get(column_index) {
+                    None => {}
+                    Some(column) => {
+                        match column.get(line_index) {
+                            None => {}
+                            Some(_) => {
+                                if !(column_index == y && line_index == x) {
+                                    count = count + 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        count
     }
 
     pub fn print(&self) -> Vec<String> {
@@ -114,7 +143,7 @@ impl<'a> Universe<'a> {
             .iter()
             .map(|x| x
                 .iter()
-                .map(|y| format!("({}{})({}:{})", y.y, y.x, self.print_neighbours_count_of(x, y), "y.cell.print_neighbours_positions()"))
+                .map(|y| format!("({}{})({}:)", y.y, y.x, self.count_neighbours_of(y.x, y.y)))
                 .collect::<Vec<String>>()
                 .join(" ")
             )
@@ -142,7 +171,7 @@ mod universe_tests {
 
         print_universe(&universe);
         for line_to_print in universe.print_check() {
-            assert_eq!(line_to_print, "(00)((1n):E) (01)((1n):W)");
+            assert_eq!(line_to_print, "(00)((1):E) (01)((1):W)");
         }
     }
 
