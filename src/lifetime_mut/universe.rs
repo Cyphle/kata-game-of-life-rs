@@ -91,36 +91,33 @@ impl Universe {
     }
 
     fn count_neighbours_of(&self, x: usize, y: usize) -> usize {
-        // TODO il faut regarder si y a des voisins tout autour
-        /*
-        Pour rappel: vec[][] => vec[column][line] => vec[0] == line 1
-         */
-        let mut count = 0;
-
-        // TODO il faut filtrer si les indexes sont égaux à x et y
         let column_neighbours_start = if y > 0 { y - 1 } else { 0 };
         let column_neighbours_end = if y + 1 < self.height { y + 1 } else { self.height - 1 };
-        for column_index in column_neighbours_start..=column_neighbours_end {
-            let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
-            let line_neighbours_end = if x + 1 < self.width { x + 1 } else { self.width - 1 };
-            for line_index in line_neighbours_start..=line_neighbours_end {
-                match self.cells.get(column_index) {
-                    None => {}
-                    Some(column) => {
-                        match column.get(line_index) {
-                            None => {}
-                            Some(_) => {
-                                if !(column_index == y && line_index == x) {
-                                    count = count + 1;
+
+        (column_neighbours_start..=column_neighbours_end)
+            .fold(0, |acc, column_index| {
+                let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
+                let line_neighbours_end = if x + 1 < self.width { x + 1 } else { self.width - 1 };
+
+                (line_neighbours_start..=line_neighbours_end)
+                    .fold(0, |acc, line_index| {
+                        match self.cells.get(column_index) {
+                            None => acc,
+                            Some(column) => {
+                                match column.get(line_index) {
+                                    None => acc,
+                                    Some(_) => {
+                                        if !(column_index == y && line_index == x) {
+                                            acc + 1
+                                        } else {
+                                            acc
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                }
-            }
-        }
-
-        count
+                    })
+            })
     }
 
     pub fn print(&self) -> Vec<String> {
