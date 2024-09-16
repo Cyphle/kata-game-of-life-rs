@@ -413,34 +413,35 @@ mod universe_tests {
         ]);
     }
 
-    // #[test]
-    // fn should_be_able_to_generate_a_linear_universe_of_two_cells_and_tick() {
-    //     let universe = Universe::new(2, 1);
-    //     println!("Before tick");
-    //     print_universe(&universe);
-    //
-    //     universe.tick();
-    //
-    //     println!("After tick");
-    //     print_universe(&universe);
-    //     for line_to_print in universe.print_check() {
-    //         assert_eq!(line_to_print, "(00)((1n):E) (01)((1n):W)");
-    //     }
-    // }
-    //
-    // #[test]
-    // fn should_multiple_ticks() {
-    //     let universe = Universe::new(10, 10);
-    //     println!("Start");
-    //     print_universe(&universe);
-    //
-    //     let number_of_ticks = 10;
-    //     for x in 0..=number_of_ticks {
-    //         println!("Tick");
-    //         universe.tick();
-    //         print_universe(&universe);
-    //     }
-    // }
+    #[test]
+    fn should_be_able_to_generate_a_linear_universe_of_two_cells_and_tick() {
+        let universe = Universe::new(2, 1);
+        println!("Before tick");
+        print_universe(&universe);
+
+        let new_universe = universe.tick();
+
+        println!("After tick");
+        print_universe(&new_universe);
+        for line_to_print in new_universe.print_check() {
+            assert_eq!(line_to_print, "(00)(1:E) (01)(1:W)");
+        }
+    }
+
+    #[test]
+    fn should_multiple_ticks() {
+        let mut universe = Universe::new(10, 10);
+        println!("Start");
+        print_universe(&universe);
+
+        let number_of_ticks = 10;
+        for x in 0..=number_of_ticks {
+            println!("Tick");
+            let new_universe = universe.tick();
+            print_universe(&new_universe);
+            universe = new_universe
+        }
+    }
 
     mod game_rules {
         use crate::nopointer::universe::Universe;
