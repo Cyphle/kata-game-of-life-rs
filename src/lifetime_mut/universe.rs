@@ -29,7 +29,7 @@ pub struct Universe {
 impl Universe {
     pub fn new(width: usize, height: usize) -> Universe {
         let states = Self::generate_base_states(width, height);
-        Universe::new_with_defined_states(&states)
+        Universe::new_with_defined_states(states)
     }
 
     fn generate_base_states(width: usize, height: usize) -> Vec<Vec<CellState>> {
@@ -51,7 +51,25 @@ impl Universe {
         states
     }
 
-    pub fn new_with_defined_states(states: &Vec<Vec<CellState>>) -> Universe {
+    pub fn new_with_defined_states_from_str(states: &Vec<&str>) -> Universe {
+        Self::new_with_defined_states(states
+            .into_iter()
+            .map(|line| {
+                line
+                    .chars()
+                    .filter(|cell| cell != &' ')
+                    .map(|cell| {
+                        match cell {
+                            'x' => CellState::ALIVE,
+                            _ => CellState::DEAD
+                        }
+                    })
+                    .collect::<Vec<CellState>>()
+            })
+            .collect::<Vec<Vec<CellState>>>())
+    }
+
+    fn new_with_defined_states(states: Vec<Vec<CellState>>) -> Universe {
         let height = states.len();
         let width = states[0].len();
 
@@ -263,7 +281,23 @@ mod universe_tests {
             vec![CellState::DEAD, CellState::ALIVE, CellState::DEAD],
             vec![CellState::ALIVE, CellState::DEAD, CellState::ALIVE],
         ];
-        let universe = Universe::new_with_defined_states(&state);
+        let universe = Universe::new_with_defined_states(state);
+
+        print_check_universe(&universe);
+        let lines_to_print = universe.print();
+        assert_eq!(lines_to_print[0], "x o x");
+        assert_eq!(lines_to_print[1], "o x o");
+        assert_eq!(lines_to_print[2], "x o x");
+    }
+
+    #[test]
+    fn should_be_able_to_generate_a_square_universe_of_three_cells_with_predefined_states_str() {
+        let state = vec![
+            "x o x",
+            "o x o",
+            "x o x"
+        ];
+        let universe = Universe::new_with_defined_states_from_str(&state);
 
         print_check_universe(&universe);
         let lines_to_print = universe.print();
@@ -302,33 +336,42 @@ mod universe_tests {
     // }
 
     mod game_rules {
+        // Any live cell with fewer than two live neighbours dies, as if caused by under-population.
+        // #[test]
+        // fn should_be_dead_when_have_one_neighbour_alive_at_next_tick() {
+        //     let state = vec![
+        //         vec![CellState::ALIVE, CellState::DEAD, CellState::ALIVE],
+        //         vec![CellState::DEAD, CellState::ALIVE, CellState::DEAD],
+        //         vec![CellState::ALIVE, CellState::DEAD, CellState::ALIVE],
+        //     ];
+        //     let universe = Universe::new_with_defined_states(&state);
+        //
+        //     let north = Rc::new(RefCell::new(Cell::new_alive()));
+        //     let north_est = Rc::new(RefCell::new(Cell::new_dead()));
+        //     let east = Rc::new(RefCell::new(Cell::new_dead()));
+        //     let south_east = Rc::new(RefCell::new(Cell::new_dead()));
+        //     let south = Rc::new(RefCell::new(Cell::new_dead()));
+        //     let south_west = Rc::new(RefCell::new(Cell::new_dead()));
+        //     let west = Rc::new(RefCell::new(Cell::new_dead()));
+        //     let north_west = Rc::new(RefCell::new(Cell::new_dead()));
+        //     let central = Rc::new(RefCell::new(Cell::new_alive()));
+        //     central.borrow_mut().add_neighbour(Rc::clone(&north), RelativePosition::North);
+        //     central.borrow_mut().add_neighbour(Rc::clone(&north_est), RelativePosition::NorthEast);
+        //     central.borrow_mut().add_neighbour(Rc::clone(&east), RelativePosition::East);
+        //     central.borrow_mut().add_neighbour(Rc::clone(&south_east), RelativePosition::SouthEast);
+        //     central.borrow_mut().add_neighbour(Rc::clone(&south), RelativePosition::South);
+        //     central.borrow_mut().add_neighbour(Rc::clone(&south_west), RelativePosition::SouthWest);
+        //     central.borrow_mut().add_neighbour(Rc::clone(&west), RelativePosition::West);
+        //     central.borrow_mut().add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
+        //
+        //     central.borrow_mut().pretick();
+        //     central.borrow_mut().tick();
+        //
+        //     assert_eq!(central.borrow().is_alive(), false);
+        // }
+
         /*
-         // Any live cell with fewer than two live neighbours dies, as if caused by under-population.
-        #[test]
-        fn should_be_dead_when_have_one_neighbour_alive_at_next_tick() {
-            let north = Rc::new(RefCell::new(Cell::new_alive()));
-            let north_est = Rc::new(RefCell::new(Cell::new_dead()));
-            let east = Rc::new(RefCell::new(Cell::new_dead()));
-            let south_east = Rc::new(RefCell::new(Cell::new_dead()));
-            let south = Rc::new(RefCell::new(Cell::new_dead()));
-            let south_west = Rc::new(RefCell::new(Cell::new_dead()));
-            let west = Rc::new(RefCell::new(Cell::new_dead()));
-            let north_west = Rc::new(RefCell::new(Cell::new_dead()));
-            let central = Rc::new(RefCell::new(Cell::new_alive()));
-            central.borrow_mut().add_neighbour(Rc::clone(&north), RelativePosition::North);
-            central.borrow_mut().add_neighbour(Rc::clone(&north_est), RelativePosition::NorthEast);
-            central.borrow_mut().add_neighbour(Rc::clone(&east), RelativePosition::East);
-            central.borrow_mut().add_neighbour(Rc::clone(&south_east), RelativePosition::SouthEast);
-            central.borrow_mut().add_neighbour(Rc::clone(&south), RelativePosition::South);
-            central.borrow_mut().add_neighbour(Rc::clone(&south_west), RelativePosition::SouthWest);
-            central.borrow_mut().add_neighbour(Rc::clone(&west), RelativePosition::West);
-            central.borrow_mut().add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
 
-            central.borrow_mut().pretick();
-            central.borrow_mut().tick();
-
-            assert_eq!(central.borrow().is_alive(), false);
-        }
 
         // Any live cell with two or three live neighbours lives on to the next generation.
         #[test]
