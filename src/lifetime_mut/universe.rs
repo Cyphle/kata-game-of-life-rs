@@ -29,7 +29,7 @@ pub struct Universe {
 impl Universe {
     pub fn new(width: usize, height: usize) -> Universe {
         let states = Self::generate_base_states(width, height);
-        Universe::new_with_defined_states(states)
+        Universe::new_with_defined_states(&states)
     }
 
     fn generate_base_states(width: usize, height: usize) -> Vec<Vec<CellState>> {
@@ -51,7 +51,7 @@ impl Universe {
         states
     }
 
-    pub fn new_with_defined_states(states: Vec<Vec<CellState>>) -> Universe {
+    pub fn new_with_defined_states(states: &Vec<Vec<CellState>>) -> Universe {
         let height = states.len();
         let width = states[0].len();
 
@@ -149,9 +149,9 @@ impl Universe {
                 acc_columns
             })
             .into_iter()                    // Iterate over the outer vector
-            .map(|inner| inner.join(" "))    // Join each inner vector with spaces
+            .map(|inner| inner.join(","))    // Join each inner vector with spaces
             .collect::<Vec<String>>()        // Collect it back into a Vec<String>
-            .join("\n")
+            .join(",")
     }
 
     pub fn print(&self) -> Vec<String> {
@@ -161,7 +161,6 @@ impl Universe {
             .map(|x| x
                 .iter()
                 .map(|y| y.cell.print())
-                // .map(|y| format!("{}({}{})({}:{})", y.cell.print(), y.y, y.x, y.cell.print_neighbours_count(), y.cell.print_neighbours_positions()))
                 .collect::<Vec<String>>()
                 .join(" ")
             )
@@ -184,6 +183,7 @@ impl Universe {
 
 #[cfg(test)]
 mod universe_tests {
+    use crate::common::cell_state::CellState;
     use crate::lifetime_mut::universe::Universe;
 
     #[test]
@@ -206,56 +206,72 @@ mod universe_tests {
         }
     }
 
-    // #[test]
-    // fn should_be_able_to_generate_a_vertical_universe_of_two_cells() {
-    //     let universe = Universe::new(1, 2);
-    //
-    //     print_universe(&universe);
-    //     let lines_to_print = universe.print_check();
-    //     assert_eq!(lines_to_print[0], "(00)((1n):S)");
-    //     assert_eq!(lines_to_print[1], "(10)((1n):N)");
-    // }
-    //
-    // #[test]
-    // fn should_be_able_to_generate_a_square_universe_of_two_cells() {
-    //     let universe = Universe::new(2, 2);
-    //
-    //     print_check_universe(&universe);
-    //     let print_check = universe.print_check();
-    //     assert_eq!(print_check[0], "(00)((3n):E,S,SE) (01)((3n):W,SW,S)");
-    //     assert_eq!(print_check[1], "(10)((3n):N,NE,E) (11)((3n):NW,N,W)");
-    // }
-    //
-    // #[test]
-    // fn should_be_able_to_generate_a_linear_universe_of_three_cells_with_random_state() {
-    //     let universe = Universe::new(3, 1);
-    //
-    //     print_universe(&universe);
-    //     for line_to_print in universe.print_check() {
-    //         assert_eq!(line_to_print, "(00)((1n):E) (01)((2n):W,E) (02)((1n):W)");
-    //     }
-    // }
-    //
-    // #[test]
-    // fn should_be_able_to_generate_a_vertical_universe_of_three_cells_with_random_state() {
-    //     let universe = Universe::new(3, 1);
-    //
-    //     print_universe(&universe);
-    //     let print_check = universe.print_check();
-    //     assert_eq!(print_check[0], "(00)((1n):E) (01)((2n):W,E) (02)((1n):W)");
-    // }
-    //
-    // #[test]
-    // fn should_be_able_to_generate_a_square_universe_of_three_cells() {
-    //     let universe = Universe::new(3, 3);
-    //
-    //     print_check_universe(&universe);
-    //     let lines_to_print = universe.print_check();
-    //     assert_eq!(lines_to_print[0], "(00)((3n):E,S,SE) (01)((5n):W,E,SW,S,SE) (02)((3n):W,SW,S)");
-    //     assert_eq!(lines_to_print[1], "(10)((5n):N,NE,E,S,SE) (11)((8n):NW,N,NE,W,E,SW,S,SE) (12)((5n):NW,N,W,SW,S)");
-    //     assert_eq!(lines_to_print[2], "(20)((3n):N,NE,E) (21)((5n):NW,N,NE,W,E) (22)((3n):NW,N,W)");
-    // }
-    //
+    #[test]
+    fn should_be_able_to_generate_a_vertical_universe_of_two_cells() {
+        let universe = Universe::new(1, 2);
+
+        print_universe(&universe);
+        let lines_to_print = universe.print_check();
+        assert_eq!(lines_to_print[0], "(00)(1:S)");
+        assert_eq!(lines_to_print[1], "(10)(1:N)");
+    }
+
+    #[test]
+    fn should_be_able_to_generate_a_square_universe_of_two_cells() {
+        let universe = Universe::new(2, 2);
+
+        print_check_universe(&universe);
+        let print_check = universe.print_check();
+        assert_eq!(print_check[0], "(00)(3:E,S,SE) (01)(3:W,SW,S)");
+        assert_eq!(print_check[1], "(10)(3:N,NE,E) (11)(3:NW,N,W)");
+    }
+
+    #[test]
+    fn should_be_able_to_generate_a_linear_universe_of_three_cells_with_random_state() {
+        let universe = Universe::new(3, 1);
+
+        print_universe(&universe);
+        for line_to_print in universe.print_check() {
+            assert_eq!(line_to_print, "(00)(1:E) (01)(2:W,E) (02)(1:W)");
+        }
+    }
+
+    #[test]
+    fn should_be_able_to_generate_a_vertical_universe_of_three_cells_with_random_state() {
+        let universe = Universe::new(3, 1);
+
+        print_universe(&universe);
+        let print_check = universe.print_check();
+        assert_eq!(print_check[0], "(00)(1:E) (01)(2:W,E) (02)(1:W)");
+    }
+
+    #[test]
+    fn should_be_able_to_generate_a_square_universe_of_three_cells() {
+        let universe = Universe::new(3, 3);
+
+        print_check_universe(&universe);
+        let lines_to_print = universe.print_check();
+        assert_eq!(lines_to_print[0], "(00)(3:E,S,SE) (01)(5:W,E,SW,S,SE) (02)(3:W,SW,S)");
+        assert_eq!(lines_to_print[1], "(10)(5:N,NE,E,S,SE) (11)(8:NW,N,NE,W,E,SW,S,SE) (12)(5:NW,N,W,SW,S)");
+        assert_eq!(lines_to_print[2], "(20)(3:N,NE,E) (21)(5:NW,N,NE,W,E) (22)(3:NW,N,W)");
+    }
+
+    #[test]
+    fn should_be_able_to_generate_a_square_universe_of_three_cells_with_predefined_states() {
+        let state = vec![
+            vec![CellState::ALIVE, CellState::DEAD, CellState::ALIVE],
+            vec![CellState::DEAD, CellState::ALIVE, CellState::DEAD],
+            vec![CellState::ALIVE, CellState::DEAD, CellState::ALIVE],
+        ];
+        let universe = Universe::new_with_defined_states(&state);
+
+        print_check_universe(&universe);
+        let lines_to_print = universe.print();
+        assert_eq!(lines_to_print[0], "x o x");
+        assert_eq!(lines_to_print[1], "o x o");
+        assert_eq!(lines_to_print[2], "x o x");
+    }
+
     // #[test]
     // fn should_be_able_to_generate_a_linear_universe_of_two_cells_and_tick() {
     //     let universe = Universe::new(2, 1);
@@ -284,6 +300,118 @@ mod universe_tests {
     //         print_universe(&universe);
     //     }
     // }
+
+    mod game_rules {
+        /*
+         // Any live cell with fewer than two live neighbours dies, as if caused by under-population.
+        #[test]
+        fn should_be_dead_when_have_one_neighbour_alive_at_next_tick() {
+            let north = Rc::new(RefCell::new(Cell::new_alive()));
+            let north_est = Rc::new(RefCell::new(Cell::new_dead()));
+            let east = Rc::new(RefCell::new(Cell::new_dead()));
+            let south_east = Rc::new(RefCell::new(Cell::new_dead()));
+            let south = Rc::new(RefCell::new(Cell::new_dead()));
+            let south_west = Rc::new(RefCell::new(Cell::new_dead()));
+            let west = Rc::new(RefCell::new(Cell::new_dead()));
+            let north_west = Rc::new(RefCell::new(Cell::new_dead()));
+            let central = Rc::new(RefCell::new(Cell::new_alive()));
+            central.borrow_mut().add_neighbour(Rc::clone(&north), RelativePosition::North);
+            central.borrow_mut().add_neighbour(Rc::clone(&north_est), RelativePosition::NorthEast);
+            central.borrow_mut().add_neighbour(Rc::clone(&east), RelativePosition::East);
+            central.borrow_mut().add_neighbour(Rc::clone(&south_east), RelativePosition::SouthEast);
+            central.borrow_mut().add_neighbour(Rc::clone(&south), RelativePosition::South);
+            central.borrow_mut().add_neighbour(Rc::clone(&south_west), RelativePosition::SouthWest);
+            central.borrow_mut().add_neighbour(Rc::clone(&west), RelativePosition::West);
+            central.borrow_mut().add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
+
+            central.borrow_mut().pretick();
+            central.borrow_mut().tick();
+
+            assert_eq!(central.borrow().is_alive(), false);
+        }
+
+        // Any live cell with two or three live neighbours lives on to the next generation.
+        #[test]
+        fn should_be_alive_when_have_two_or_three_neighbours_alive_at_next_tick() {
+            let north = Rc::new(RefCell::new(Cell::new_alive()));
+            let north_est = Rc::new(RefCell::new(Cell::new_alive()));
+            let east = Rc::new(RefCell::new(Cell::new_alive()));
+            let south_east = Rc::new(RefCell::new(Cell::new_dead()));
+            let south = Rc::new(RefCell::new(Cell::new_dead()));
+            let south_west = Rc::new(RefCell::new(Cell::new_dead()));
+            let west = Rc::new(RefCell::new(Cell::new_dead()));
+            let north_west = Rc::new(RefCell::new(Cell::new_dead()));
+            let mut central = Cell::new_alive();
+            central.add_neighbour(Rc::clone(&north), RelativePosition::North);
+            central.add_neighbour(Rc::clone(&north_est), RelativePosition::NorthEast);
+            central.add_neighbour(Rc::clone(&east), RelativePosition::East);
+            central.add_neighbour(Rc::clone(&south_east), RelativePosition::SouthEast);
+            central.add_neighbour(Rc::clone(&south), RelativePosition::South);
+            central.add_neighbour(Rc::clone(&south_west), RelativePosition::SouthWest);
+            central.add_neighbour(Rc::clone(&west), RelativePosition::West);
+            central.add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
+
+            central.pretick();
+            central.tick();
+
+            assert_eq!(central.is_alive(), true);
+        }
+
+        // Any live cell with more than three live neighbours dies, as if by overcrowding.
+        #[test]
+        fn should_be_dead_when_more_then_three_neighbours_alive_at_next_tick() {
+            let north = Rc::new(RefCell::new(Cell::new_alive()));
+            let north_est = Rc::new(RefCell::new(Cell::new_alive()));
+            let east = Rc::new(RefCell::new(Cell::new_alive()));
+            let south_east = Rc::new(RefCell::new(Cell::new_alive()));
+            let south = Rc::new(RefCell::new(Cell::new_dead()));
+            let south_west = Rc::new(RefCell::new(Cell::new_dead()));
+            let west = Rc::new(RefCell::new(Cell::new_dead()));
+            let north_west = Rc::new(RefCell::new(Cell::new_dead()));
+            let mut central = Cell::new_alive();
+            central.add_neighbour(Rc::clone(&north), RelativePosition::North);
+            central.add_neighbour(Rc::clone(&north_est), RelativePosition::NorthEast);
+            central.add_neighbour(Rc::clone(&east), RelativePosition::East);
+            central.add_neighbour(Rc::clone(&south_east), RelativePosition::SouthEast);
+            central.add_neighbour(Rc::clone(&south), RelativePosition::South);
+            central.add_neighbour(Rc::clone(&south_west), RelativePosition::SouthWest);
+            central.add_neighbour(Rc::clone(&west), RelativePosition::West);
+            central.add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
+
+            central.pretick();
+            central.tick();
+
+            assert_eq!(central.is_alive(), false);
+        }
+
+        // Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+        #[test]
+        fn should_be_alive_when_three_live_neighbours_alive_at_next_tick() {
+            let north = Rc::new(RefCell::new(Cell::new_alive()));
+            let north_est = Rc::new(RefCell::new(Cell::new_alive()));
+            let east = Rc::new(RefCell::new(Cell::new_alive()));
+            let south_east = Rc::new(RefCell::new(Cell::new_dead()));
+            let south = Rc::new(RefCell::new(Cell::new_dead()));
+            let south_west = Rc::new(RefCell::new(Cell::new_dead()));
+            let west = Rc::new(RefCell::new(Cell::new_dead()));
+            let north_west = Rc::new(RefCell::new(Cell::new_dead()));
+            let mut central = Cell::new_dead();
+            central.add_neighbour(Rc::clone(&north), RelativePosition::North);
+            central.add_neighbour(Rc::clone(&north_est), RelativePosition::NorthEast);
+            central.add_neighbour(Rc::clone(&east), RelativePosition::East);
+            central.add_neighbour(Rc::clone(&south_east), RelativePosition::SouthEast);
+            central.add_neighbour(Rc::clone(&south), RelativePosition::South);
+            central.add_neighbour(Rc::clone(&south_west), RelativePosition::SouthWest);
+            central.add_neighbour(Rc::clone(&west), RelativePosition::West);
+            central.add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
+
+            central.pretick();
+            central.tick();
+
+            assert_eq!(central.is_alive(), true);
+        }
+         */
+    }
 
     fn print_universe(universe: &Universe) {
         for line_to_print in universe.print() {
