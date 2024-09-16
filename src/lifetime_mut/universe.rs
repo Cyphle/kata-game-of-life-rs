@@ -30,12 +30,65 @@ impl Universe {
     /*
         INSTANCE
      */
-    // fn tick(&self) -> Universe {
-    //     /*
-    //     Il faut parcourir chaque cellule et récupérer ses voisins et leur état et calculer le nouvel état et ajouter dans un nouvel univers
-    //     Du coup il faut une méthode get_neighbours_states_of(x, y) -> Vec<CellState>
-    //      */
-    // }
+    fn tick(&self) -> Universe {
+        let mut new_cells: Vec<Vec<CellPosition>> = vec![];
+
+        for y in UNIVERSE_START_INDEX..self.height {
+            let mut line: Vec<CellPosition> = vec![];
+            for x in UNIVERSE_START_INDEX..self.width {
+                let cell = match self.cells.get(y) {
+                    Some(line_of_cells) => {
+                        match line_of_cells.get(x) {
+                            None => Cell::new_random_state(),
+                            Some(cell_position) => {
+                                let neighbours_states = self.get_neighbours_states_of(x, y);
+                                Cell::new(&self.next_state_of(cell_position.cell.get_state(), neighbours_states))
+                            }
+                        }
+                    }
+                    _ => {
+                        Cell::new_random_state()
+                    }
+                };
+
+                line.push(CellPosition {
+                    x,
+                    y,
+                    cell,
+                });
+            }
+
+            new_cells.push(line);
+        }
+
+        Universe {
+            width: self.width,
+            height: self.height,
+            cells: new_cells,
+        }
+    }
+
+    fn next_state_of(&self, cell_state: CellState, neighbour_state: Vec<CellState>) -> CellState {
+        let alive_neighbours = neighbour_state
+            .iter()
+            .filter(|state| state == &&CellState::ALIVE)
+            .count();
+
+        match alive_neighbours {
+            n if n < 2 || n > 3 => {
+                CellState::DEAD
+            }
+            3 => {
+                CellState::ALIVE
+            }
+            _ => {
+                match cell_state {
+                    CellState::ALIVE => CellState::ALIVE,
+                    CellState::DEAD => CellState::DEAD,
+                }
+            }
+        }
+    }
 
     fn get_neighbours_states_of(&self, x: usize, y: usize) -> Vec<CellState> {
         let column_neighbours_start = if y > 0 { y - 1 } else { 0 };
@@ -411,10 +464,10 @@ mod universe_tests {
             ];
             let universe = Universe::new_from_states(&state);
 
-            // let new_universe = universe.tick();
+            let new_universe = universe.tick();
 
-            // let lines_to_print = universe.print();
-            // assert_eq!(lines_to_print[1].split(" ")[1], "o");
+            let lines_to_print = universe.print();
+            assert_eq!(lines_to_print[1].split(" ").collect::<Vec<&str>>()[1], "o");
         }
 
         /*
