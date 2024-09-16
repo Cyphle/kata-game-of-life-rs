@@ -2,15 +2,9 @@ use rand::Rng;
 
 use crate::common::cell_state::CellState;
 use crate::common::relative_position::RelativePosition;
-use crate::lifetime_mut::cell::Cell;
+use crate::nopointer::cell::Cell;
 
 static UNIVERSE_START_INDEX: usize = 0;
-
-// TODO
-/*
-La stratégie est de reconstruire un univers à chaque tick et de sortir l'ancien du scope pour qu'il soit détruit
-
- */
 
 #[derive(Debug)]
 struct CellPosition {
@@ -297,7 +291,7 @@ impl Universe {
 #[cfg(test)]
 mod universe_tests {
     use crate::common::cell_state::CellState;
-    use crate::lifetime_mut::universe::Universe;
+    use crate::nopointer::universe::Universe;
 
     #[test]
     fn should_be_able_to_generate_a_monocellular_universe() {
@@ -449,8 +443,8 @@ mod universe_tests {
     // }
 
     mod game_rules {
-        use crate::lifetime_mut::universe::Universe;
-        use crate::lifetime_mut::universe::universe_tests::print_universe;
+        use crate::nopointer::universe::Universe;
+        use crate::nopointer::universe::universe_tests::print_universe;
 
         // Any live cell with fewer than two live neighbours dies, as if caused by under-population.
         #[test]
@@ -485,33 +479,24 @@ mod universe_tests {
             let lines_to_print = new_universe.print();
             assert_eq!(lines_to_print[1].split(" ").collect::<Vec<&str>>()[1], "x");
         }
-        /*
+
         // Any live cell with more than three live neighbours dies, as if by overcrowding.
         #[test]
         fn should_be_dead_when_more_then_three_neighbours_alive_at_next_tick() {
-            let north = Rc::new(RefCell::new(Cell::new_alive()));
-            let north_est = Rc::new(RefCell::new(Cell::new_alive()));
-            let east = Rc::new(RefCell::new(Cell::new_alive()));
-            let south_east = Rc::new(RefCell::new(Cell::new_alive()));
-            let south = Rc::new(RefCell::new(Cell::new_dead()));
-            let south_west = Rc::new(RefCell::new(Cell::new_dead()));
-            let west = Rc::new(RefCell::new(Cell::new_dead()));
-            let north_west = Rc::new(RefCell::new(Cell::new_dead()));
-            let mut central = Cell::new_alive();
-            central.add_neighbour(Rc::clone(&north), RelativePosition::North);
-            central.add_neighbour(Rc::clone(&north_est), RelativePosition::NorthEast);
-            central.add_neighbour(Rc::clone(&east), RelativePosition::East);
-            central.add_neighbour(Rc::clone(&south_east), RelativePosition::SouthEast);
-            central.add_neighbour(Rc::clone(&south), RelativePosition::South);
-            central.add_neighbour(Rc::clone(&south_west), RelativePosition::SouthWest);
-            central.add_neighbour(Rc::clone(&west), RelativePosition::West);
-            central.add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
+            let state = vec![
+                "o x x",
+                "o x x",
+                "o o x"
+            ];
+            let universe = Universe::new_from_states(&state);
 
-            central.pretick();
-            central.tick();
+            let new_universe = universe.tick();
 
-            assert_eq!(central.is_alive(), false);
+            print_universe(&new_universe);
+            let lines_to_print = new_universe.print();
+            assert_eq!(lines_to_print[1].split(" ").collect::<Vec<&str>>()[1], "o");
         }
+        /*
 
         // Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
         #[test]

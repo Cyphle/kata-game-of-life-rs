@@ -1,7 +1,7 @@
 use std::{thread, time};
 use crate::smartpointers::universe;
 
-mod lifetime_mut;
+mod nopointer;
 mod common;
 mod smartpointers;
 
