@@ -27,84 +27,14 @@ pub struct Universe {
 }
 
 impl Universe {
-    pub fn new(width: usize, height: usize) -> Universe {
-        let states = Self::generate_base_states(width, height);
-        Universe::new_with_defined_states(states)
-    }
-
-    fn generate_base_states(width: usize, height: usize) -> Vec<Vec<CellState>> {
-        let mut states: Vec<Vec<CellState>> = vec![];
-
-        for _ in 0..height {
-            let mut line_states: Vec<CellState> = vec![];
-            for _ in 0..width {
-                let rand = rand::thread_rng().gen_range(0..2);
-                let state = match rand {
-                    0 => CellState::DEAD,
-                    _ => CellState::ALIVE,
-                };
-                line_states.push(state);
-            }
-            states.push(line_states);
-        }
-
-        states
-    }
-
-    pub fn new_with_defined_states_from_str(states: &Vec<&str>) -> Universe {
-        Self::new_with_defined_states(states
-            .into_iter()
-            .map(|line| {
-                line
-                    .chars()
-                    .filter(|cell| cell != &' ')
-                    .map(|cell| {
-                        match cell {
-                            'x' => CellState::ALIVE,
-                            _ => CellState::DEAD
-                        }
-                    })
-                    .collect::<Vec<CellState>>()
-            })
-            .collect::<Vec<Vec<CellState>>>())
-    }
-
-    fn new_with_defined_states(states: Vec<Vec<CellState>>) -> Universe {
-        let height = states.len();
-        let width = states[0].len();
-
-        let mut cells: Vec<Vec<CellPosition>> = vec![];
-
-        for y in UNIVERSE_START_INDEX..height {
-            let mut line: Vec<CellPosition> = vec![];
-            for x in UNIVERSE_START_INDEX..width {
-                let mut cell = match states.get(y) {
-                    Some(line_of_states) => {
-                        match line_of_states.get(x) {
-                            None => Cell::new_random_state(),
-                            Some(state) => Cell::new(state)
-                        }
-                    }
-                    _ => {
-                        Cell::new_random_state()
-                    }
-                };
-
-                line.push(CellPosition {
-                    x,
-                    y,
-                    cell,
-                });
-            }
-
-            cells.push(line);
-        }
-
-        Universe {
-            width,
-            height,
-            cells,
-        }
+    /*
+        INSTANCE
+     */
+    fn tick(&self) -> Universe {
+        /*
+        Il faut parcourir chaque cellule et récupérer ses voisins et leur état et calculer le nouvel état et ajouter dans un nouvel univers
+        Du coup il faut une méthode get_neighbours_states_of(x, y) -> Vec<CellState>
+         */
     }
 
     fn count_neighbours_of(&self, x: usize, y: usize) -> usize {
@@ -197,6 +127,89 @@ impl Universe {
             )
             .collect()
     }
+
+    /*
+        STATIC
+     */
+    pub fn new(width: usize, height: usize) -> Universe {
+        let states = Self::generate_base_states(width, height);
+        Universe::new_from_cell_states(states)
+    }
+
+    fn generate_base_states(width: usize, height: usize) -> Vec<Vec<CellState>> {
+        let mut states: Vec<Vec<CellState>> = vec![];
+
+        for _ in 0..height {
+            let mut line_states: Vec<CellState> = vec![];
+            for _ in 0..width {
+                let rand = rand::thread_rng().gen_range(0..2);
+                let state = match rand {
+                    0 => CellState::DEAD,
+                    _ => CellState::ALIVE,
+                };
+                line_states.push(state);
+            }
+            states.push(line_states);
+        }
+
+        states
+    }
+
+    pub fn new_from_states(states: &Vec<&str>) -> Universe {
+        Self::new_from_cell_states(states
+            .into_iter()
+            .map(|line| {
+                line
+                    .chars()
+                    .filter(|cell| cell != &' ')
+                    .map(|cell| {
+                        match cell {
+                            'x' => CellState::ALIVE,
+                            _ => CellState::DEAD
+                        }
+                    })
+                    .collect::<Vec<CellState>>()
+            })
+            .collect::<Vec<Vec<CellState>>>())
+    }
+
+    fn new_from_cell_states(states: Vec<Vec<CellState>>) -> Universe {
+        let height = states.len();
+        let width = states[0].len();
+
+        let mut cells: Vec<Vec<CellPosition>> = vec![];
+
+        for y in UNIVERSE_START_INDEX..height {
+            let mut line: Vec<CellPosition> = vec![];
+            for x in UNIVERSE_START_INDEX..width {
+                let mut cell = match states.get(y) {
+                    Some(line_of_states) => {
+                        match line_of_states.get(x) {
+                            None => Cell::new_random_state(),
+                            Some(state) => Cell::new(state)
+                        }
+                    }
+                    _ => {
+                        Cell::new_random_state()
+                    }
+                };
+
+                line.push(CellPosition {
+                    x,
+                    y,
+                    cell,
+                });
+            }
+
+            cells.push(line);
+        }
+
+        Universe {
+            width,
+            height,
+            cells,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -281,7 +294,7 @@ mod universe_tests {
             vec![CellState::DEAD, CellState::ALIVE, CellState::DEAD],
             vec![CellState::ALIVE, CellState::DEAD, CellState::ALIVE],
         ];
-        let universe = Universe::new_with_defined_states(state);
+        let universe = Universe::new_from_cell_states(state);
 
         print_check_universe(&universe);
         let lines_to_print = universe.print();
@@ -297,7 +310,7 @@ mod universe_tests {
             "o x o",
             "x o x"
         ];
-        let universe = Universe::new_with_defined_states_from_str(&state);
+        let universe = Universe::new_from_states(&state);
 
         print_check_universe(&universe);
         let lines_to_print = universe.print();
@@ -336,39 +349,23 @@ mod universe_tests {
     // }
 
     mod game_rules {
+        use crate::lifetime_mut::universe::Universe;
+
         // Any live cell with fewer than two live neighbours dies, as if caused by under-population.
-        // #[test]
-        // fn should_be_dead_when_have_one_neighbour_alive_at_next_tick() {
-        //     let state = vec![
-        //         vec![CellState::ALIVE, CellState::DEAD, CellState::ALIVE],
-        //         vec![CellState::DEAD, CellState::ALIVE, CellState::DEAD],
-        //         vec![CellState::ALIVE, CellState::DEAD, CellState::ALIVE],
-        //     ];
-        //     let universe = Universe::new_with_defined_states(&state);
-        //
-        //     let north = Rc::new(RefCell::new(Cell::new_alive()));
-        //     let north_est = Rc::new(RefCell::new(Cell::new_dead()));
-        //     let east = Rc::new(RefCell::new(Cell::new_dead()));
-        //     let south_east = Rc::new(RefCell::new(Cell::new_dead()));
-        //     let south = Rc::new(RefCell::new(Cell::new_dead()));
-        //     let south_west = Rc::new(RefCell::new(Cell::new_dead()));
-        //     let west = Rc::new(RefCell::new(Cell::new_dead()));
-        //     let north_west = Rc::new(RefCell::new(Cell::new_dead()));
-        //     let central = Rc::new(RefCell::new(Cell::new_alive()));
-        //     central.borrow_mut().add_neighbour(Rc::clone(&north), RelativePosition::North);
-        //     central.borrow_mut().add_neighbour(Rc::clone(&north_est), RelativePosition::NorthEast);
-        //     central.borrow_mut().add_neighbour(Rc::clone(&east), RelativePosition::East);
-        //     central.borrow_mut().add_neighbour(Rc::clone(&south_east), RelativePosition::SouthEast);
-        //     central.borrow_mut().add_neighbour(Rc::clone(&south), RelativePosition::South);
-        //     central.borrow_mut().add_neighbour(Rc::clone(&south_west), RelativePosition::SouthWest);
-        //     central.borrow_mut().add_neighbour(Rc::clone(&west), RelativePosition::West);
-        //     central.borrow_mut().add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
-        //
-        //     central.borrow_mut().pretick();
-        //     central.borrow_mut().tick();
-        //
-        //     assert_eq!(central.borrow().is_alive(), false);
-        // }
+        #[test]
+        fn should_be_dead_when_have_one_neighbour_alive_at_next_tick() {
+            let state = vec![
+                "o x o",
+                "o x o",
+                "o o o"
+            ];
+            let universe = Universe::new_from_states(&state);
+
+            let new_universe = universe.tick();
+
+            let lines_to_print = universe.print();
+            assert_eq!(lines_to_print[1].split(" ")[1], "o");
+        }
 
         /*
 
