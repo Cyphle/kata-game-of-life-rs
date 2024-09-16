@@ -24,7 +24,7 @@ impl Universe {
     /*
         INSTANCE
      */
-    fn tick(&self) -> Universe {
+    pub fn tick(&self) -> Universe {
         let mut new_cells: Vec<Vec<CellPosition>> = vec![];
 
         for y in UNIVERSE_START_INDEX..self.height {
