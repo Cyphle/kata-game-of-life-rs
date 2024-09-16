@@ -123,7 +123,7 @@ impl Universe {
         let column_neighbours_start = if y > 0 { y - 1 } else { 0 };
         let column_neighbours_end = if y + 1 < self.height { y + 1 } else { self.height - 1 };
 
-        let positions = (column_neighbours_start..=column_neighbours_end)
+        (column_neighbours_start..=column_neighbours_end)
             .fold(vec![], |mut acc_columns, column_index| {
                 let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
                 let line_neighbours_end = if x + 1 < self.width { x + 1 } else { self.width - 1 };
@@ -151,9 +151,7 @@ impl Universe {
             .into_iter()                    // Iterate over the outer vector
             .map(|inner| inner.join(" "))    // Join each inner vector with spaces
             .collect::<Vec<String>>()        // Collect it back into a Vec<String>
-            .join("\n");
-
-        positions
+            .join("\n")
     }
 
     pub fn print(&self) -> Vec<String> {
