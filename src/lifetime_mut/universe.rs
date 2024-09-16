@@ -30,11 +30,43 @@ impl Universe {
     /*
         INSTANCE
      */
-    fn tick(&self) -> Universe {
-        /*
-        Il faut parcourir chaque cellule et récupérer ses voisins et leur état et calculer le nouvel état et ajouter dans un nouvel univers
-        Du coup il faut une méthode get_neighbours_states_of(x, y) -> Vec<CellState>
-         */
+    // fn tick(&self) -> Universe {
+    //     /*
+    //     Il faut parcourir chaque cellule et récupérer ses voisins et leur état et calculer le nouvel état et ajouter dans un nouvel univers
+    //     Du coup il faut une méthode get_neighbours_states_of(x, y) -> Vec<CellState>
+    //      */
+    // }
+
+    fn get_neighbours_states_of(&self, x: usize, y: usize) -> Vec<CellState> {
+        let column_neighbours_start = if y > 0 { y - 1 } else { 0 };
+        let column_neighbours_end = if y + 1 < self.height { y + 1 } else { self.height - 1 };
+
+        (column_neighbours_start..=column_neighbours_end)
+            .fold(vec![], |mut acc, column_index| {
+                let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
+                let line_neighbours_end = if x + 1 < self.width { x + 1 } else { self.width - 1 };
+
+                (line_neighbours_start..=line_neighbours_end)
+                    .for_each(|line_index| {
+                        match self.cells.get(column_index) {
+                            None => {}
+                            Some(column) => {
+                                match column.get(line_index) {
+                                    None => {}
+                                    Some(neighbour) => {
+                                        if !(column_index == y && line_index == x) {
+                                            acc.push(neighbour.cell.get_state());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                acc
+            })
+            .into_iter()                    // Iterate over the outer vector
+            .collect::<Vec<CellState>>()        // Collect it back into a Vec<String>
     }
 
     fn count_neighbours_of(&self, x: usize, y: usize) -> usize {
@@ -319,6 +351,24 @@ mod universe_tests {
         assert_eq!(lines_to_print[2], "x o x");
     }
 
+    #[test]
+    fn should_get_neighbours_states() {
+        let state = vec![
+            "x o x",
+            "o x o",
+            "x o x"
+        ];
+        let universe = Universe::new_from_states(&state);
+
+        let neighbour_states = universe.get_neighbours_states_of(1, 1);
+
+        assert_eq!(neighbour_states, vec![
+            CellState::ALIVE, CellState::DEAD, CellState::ALIVE,
+            CellState::DEAD, CellState::DEAD,
+            CellState::ALIVE, CellState::DEAD, CellState::ALIVE
+        ]);
+    }
+
     // #[test]
     // fn should_be_able_to_generate_a_linear_universe_of_two_cells_and_tick() {
     //     let universe = Universe::new(2, 1);
@@ -361,10 +411,10 @@ mod universe_tests {
             ];
             let universe = Universe::new_from_states(&state);
 
-            let new_universe = universe.tick();
+            // let new_universe = universe.tick();
 
-            let lines_to_print = universe.print();
-            assert_eq!(lines_to_print[1].split(" ")[1], "o");
+            // let lines_to_print = universe.print();
+            // assert_eq!(lines_to_print[1].split(" ")[1], "o");
         }
 
         /*

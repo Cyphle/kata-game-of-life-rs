@@ -1,6 +1,5 @@
-use rand::Rng;
 use crate::common::cell_state::CellState;
-use crate::common::relative_position::RelativePosition;
+use rand::Rng;
 
 #[derive(Debug)]
 pub struct Cell {
@@ -12,6 +11,13 @@ impl Cell {
         return match self.state {
             CellState::ALIVE => { true }
             CellState::DEAD => { false }
+        };
+    }
+
+    pub fn get_state(&self) -> CellState {
+        return match self.state {
+            CellState::ALIVE => { CellState::ALIVE }
+            CellState::DEAD => { CellState::DEAD }
         };
     }
 
