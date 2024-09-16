@@ -82,10 +82,7 @@ impl Universe {
                 CellState::ALIVE
             }
             _ => {
-                match cell_state {
-                    CellState::ALIVE => CellState::ALIVE,
-                    CellState::DEAD => CellState::DEAD,
-                }
+                cell_state.clone()
             }
         }
     }
@@ -472,34 +469,23 @@ mod universe_tests {
             assert_eq!(lines_to_print[1].split(" ").collect::<Vec<&str>>()[1], "o");
         }
 
-        /*
         // Any live cell with two or three live neighbours lives on to the next generation.
         #[test]
         fn should_be_alive_when_have_two_or_three_neighbours_alive_at_next_tick() {
-            let north = Rc::new(RefCell::new(Cell::new_alive()));
-            let north_est = Rc::new(RefCell::new(Cell::new_alive()));
-            let east = Rc::new(RefCell::new(Cell::new_alive()));
-            let south_east = Rc::new(RefCell::new(Cell::new_dead()));
-            let south = Rc::new(RefCell::new(Cell::new_dead()));
-            let south_west = Rc::new(RefCell::new(Cell::new_dead()));
-            let west = Rc::new(RefCell::new(Cell::new_dead()));
-            let north_west = Rc::new(RefCell::new(Cell::new_dead()));
-            let mut central = Cell::new_alive();
-            central.add_neighbour(Rc::clone(&north), RelativePosition::North);
-            central.add_neighbour(Rc::clone(&north_est), RelativePosition::NorthEast);
-            central.add_neighbour(Rc::clone(&east), RelativePosition::East);
-            central.add_neighbour(Rc::clone(&south_east), RelativePosition::SouthEast);
-            central.add_neighbour(Rc::clone(&south), RelativePosition::South);
-            central.add_neighbour(Rc::clone(&south_west), RelativePosition::SouthWest);
-            central.add_neighbour(Rc::clone(&west), RelativePosition::West);
-            central.add_neighbour(Rc::clone(&north_west), RelativePosition::NorthWest);
+            let state = vec![
+                "o x x",
+                "o x x",
+                "o o o"
+            ];
+            let universe = Universe::new_from_states(&state);
 
-            central.pretick();
-            central.tick();
+            let new_universe = universe.tick();
 
-            assert_eq!(central.is_alive(), true);
+            print_universe(&new_universe);
+            let lines_to_print = new_universe.print();
+            assert_eq!(lines_to_print[1].split(" ").collect::<Vec<&str>>()[1], "x");
         }
-
+        /*
         // Any live cell with more than three live neighbours dies, as if by overcrowding.
         #[test]
         fn should_be_dead_when_more_then_three_neighbours_alive_at_next_tick() {
