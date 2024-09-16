@@ -1,10 +1,3 @@
-// TODO
-/*
-La stratégie est de reconstruire un univers à chaque tick et de sortir l'ancien du scope pour qu'il soit détruit
-
- */
-use std::cell::RefCell;
-use std::rc::Rc;
 use rand::Rng;
 
 use crate::common::cell_state::CellState;
@@ -12,6 +5,12 @@ use crate::common::relative_position::RelativePosition;
 use crate::lifetime_mut::cell::Cell;
 
 static UNIVERSE_START_INDEX: usize = 0;
+
+// TODO
+/*
+La stratégie est de reconstruire un univers à chaque tick et de sortir l'ancien du scope pour qu'il soit détruit
+
+ */
 
 #[derive(Debug)]
 struct CellPosition {
@@ -95,22 +94,22 @@ impl Universe {
         let column_neighbours_end = if y + 1 < self.height { y + 1 } else { self.height - 1 };
 
         (column_neighbours_start..=column_neighbours_end)
-            .fold(0, |acc, column_index| {
+            .fold(0, |acc_columns, column_index| {
                 let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
                 let line_neighbours_end = if x + 1 < self.width { x + 1 } else { self.width - 1 };
 
-                (line_neighbours_start..=line_neighbours_end)
-                    .fold(0, |acc, line_index| {
+                acc_columns + (line_neighbours_start..=line_neighbours_end)
+                    .fold(0, |acc_lines, line_index| {
                         match self.cells.get(column_index) {
-                            None => acc,
+                            None => acc_lines,
                             Some(column) => {
                                 match column.get(line_index) {
-                                    None => acc,
+                                    None => acc_lines,
                                     Some(_) => {
                                         if !(column_index == y && line_index == x) {
-                                            acc + 1
+                                            acc_lines + 1
                                         } else {
-                                            acc
+                                            acc_lines
                                         }
                                     }
                                 }
@@ -118,6 +117,43 @@ impl Universe {
                         }
                     })
             })
+    }
+
+    fn neighbours_positions_of(&self, x: usize, y: usize) -> String {
+        let column_neighbours_start = if y > 0 { y - 1 } else { 0 };
+        let column_neighbours_end = if y + 1 < self.height { y + 1 } else { self.height - 1 };
+
+        let positions = (column_neighbours_start..=column_neighbours_end)
+            .fold(vec![], |mut acc_columns, column_index| {
+                let line_neighbours_start = if x > 0 { x - 1 } else { 0 };
+                let line_neighbours_end = if x + 1 < self.width { x + 1 } else { self.width - 1 };
+
+                acc_columns.push((line_neighbours_start..=line_neighbours_end)
+                    .fold(vec![], |mut acc_lines, line_index| {
+                        match self.cells.get(column_index) {
+                            None => acc_lines,
+                            Some(column) => {
+                                match column.get(line_index) {
+                                    None => acc_lines,
+                                    Some(_) => {
+                                        if !(column_index == y && line_index == x) {
+                                            acc_lines.push(RelativePosition::get_position_from(x, y, line_index, column_index).print());
+                                        }
+                                        acc_lines
+                                    }
+                                }
+                            }
+                        }
+                    }));
+
+                acc_columns
+            })
+            .into_iter()                    // Iterate over the outer vector
+            .map(|inner| inner.join(" "))    // Join each inner vector with spaces
+            .collect::<Vec<String>>()        // Collect it back into a Vec<String>
+            .join("\n");
+
+        positions
     }
 
     pub fn print(&self) -> Vec<String> {
@@ -140,7 +176,7 @@ impl Universe {
             .iter()
             .map(|x| x
                 .iter()
-                .map(|y| format!("({}{})({}:)", y.y, y.x, self.count_neighbours_of(y.x, y.y)))
+                .map(|y| format!("({}{})({}:{})", y.y, y.x, self.count_neighbours_of(y.x, y.y), self.neighbours_positions_of(y.x, y.y)))
                 .collect::<Vec<String>>()
                 .join(" ")
             )
@@ -168,7 +204,7 @@ mod universe_tests {
 
         print_universe(&universe);
         for line_to_print in universe.print_check() {
-            assert_eq!(line_to_print, "(00)((1):E) (01)((1):W)");
+            assert_eq!(line_to_print, "(00)(1:E) (01)(1:W)");
         }
     }
 
