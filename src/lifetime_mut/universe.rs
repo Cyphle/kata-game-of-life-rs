@@ -69,12 +69,12 @@ impl Universe {
     }
 
     fn next_state_of(&self, cell_state: CellState, neighbour_state: Vec<CellState>) -> CellState {
-        let alive_neighbours = neighbour_state
+        let alive_neighbours_count = neighbour_state
             .iter()
             .filter(|state| state == &&CellState::ALIVE)
             .count();
 
-        match alive_neighbours {
+        match alive_neighbours_count {
             n if n < 2 || n > 3 => {
                 CellState::DEAD
             }
@@ -453,6 +453,7 @@ mod universe_tests {
 
     mod game_rules {
         use crate::lifetime_mut::universe::Universe;
+        use crate::lifetime_mut::universe::universe_tests::print_universe;
 
         // Any live cell with fewer than two live neighbours dies, as if caused by under-population.
         #[test]
@@ -466,13 +467,12 @@ mod universe_tests {
 
             let new_universe = universe.tick();
 
-            let lines_to_print = universe.print();
+            print_universe(&new_universe);
+            let lines_to_print = new_universe.print();
             assert_eq!(lines_to_print[1].split(" ").collect::<Vec<&str>>()[1], "o");
         }
 
         /*
-
-
         // Any live cell with two or three live neighbours lives on to the next generation.
         #[test]
         fn should_be_alive_when_have_two_or_three_neighbours_alive_at_next_tick() {
